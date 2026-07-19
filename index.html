@@ -433,6 +433,24 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .toast.show{ display:block; animation:toastin .35s var(--ease); }
 @keyframes toastin{ 0%{opacity:0; transform:translateX(50%) translateY(14px) scale(.9);} 60%{opacity:1; transform:translateX(50%) translateY(-3px) scale(1.02);} 100%{opacity:1; transform:translateX(50%) translateY(0) scale(1);} }
 
+/* ============================================================
+   SPEC ITEMS (multi-spec per job)
+============================================================ */
+.spec-item-row{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; margin-bottom:8px;
+  background:var(--panel-2); border:1px solid var(--line-soft); font-size:12px; border-right:2px solid var(--cyan);
+}
+.spec-item-row .si-main{ flex:1; }
+.spec-item-row .si-main b{ color:var(--ink); }
+.spec-item-row .si-meta{ color:var(--ink-faint); font-family:var(--font-m); font-size:10.5px; direction:ltr; text-align:right; margin-top:2px; }
+.spec-item-remove{ background:none; border:1px solid var(--bad); color:var(--bad); width:24px; height:24px; border-radius:2px; cursor:pointer; flex:none; font-size:13px; line-height:1; }
+.spec-item-remove:hover{ background:rgba(255,59,92,.12); }
+.weight-readout{
+  background:var(--panel-2); border:1px dashed var(--line); padding:9px 11px; font-size:13px;
+  font-family:var(--font-m); direction:ltr; text-align:right; color:var(--cyan);
+}
+#specItemsEmpty{ color:var(--ink-faint); font-size:12px; padding:4px 0 10px; }
+
 footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family:var(--font-m); margin-top:40px; padding:0 18px; }
 
 @media (prefers-reduced-motion: reduce){
@@ -527,22 +545,33 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         </div>
       </div>
 
-      <div class="form-section spec-card">
-        <div class="section-label">المواصفات</div>
+      <div class="form-section spec-card full">
+        <div class="section-label">المواصفات (تقدر تضيف كذا مواصفة في نفس الشغلانة)</div>
+
         <div class="field">
-          <label>نوع الحديد الأساسي</label>
+          <label>نوع الخام</label>
           <div class="chip-group" id="ironTypeChips">
-            <div class="chip" data-val="square">مربع</div>
-            <div class="chip" data-val="angle">أنجل</div>
-            <div class="chip" data-val="pipes">مواسير</div>
             <div class="chip" data-val="sheet">صاج</div>
-            <div class="chip" data-val="mix">مكس</div>
+            <div class="chip" data-val="boxes">علب</div>
+            <div class="chip" data-val="zawya">زوايا</div>
+            <div class="chip" data-val="pipes"> مواسير كمر</div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>الطول (مم)</label>
+            <input type="number" id="f_length" min="0" step="0.1">
+          </div>
+          <div class="field">
+            <label>العرض (مم)</label>
+            <input type="number" id="f_width" min="0" step="0.1">
           </div>
         </div>
         <div class="row2">
           <div class="field">
-            <label>الوزن التقريبي (كيلو)</label>
-            <input type="number" id="f_weight" min="0" step="0.1">
+            <label>السمك (مم)</label>
+            <input type="number" id="f_thickness" min="0" step="0.1">
           </div>
           <div class="field">
             <label>عدد القطع</label>
@@ -550,13 +579,10 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
           </div>
         </div>
         <div class="field">
-          <label>كمية اللحام</label>
-          <div class="chip-group" id="weldingChips">
-            <div class="chip" data-val="simple">🔥 بسيط</div>
-            <div class="chip" data-val="medium">🔥🔥 متوسط</div>
-            <div class="chip" data-val="heavy">🔥🔥🔥 كتير</div>
-          </div>
+          <label>⚖️ الوزن التقريبي المحسوب (كيلو)</label>
+          <div class="weight-readout" id="computedWeightReadout">0 كجم</div>
         </div>
+
         <div class="field">
           <label>فيه دهان / تشطيب؟</label>
           <div class="chip-group" id="finishChips">
@@ -564,6 +590,24 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
             <div class="chip" data-val="yes">أيوه</div>
           </div>
         </div>
+        <div class="field" id="finishTypeField" style="display:none;">
+          <label>نوع التشطيب</label>
+          <div class="chip-group" id="finishTypeChips">
+            <div class="chip" data-val="liner">بطانه</div>
+            <div class="chip" data-val="doco">دوكو</div>
+            <div class="chip" data-val="lacquer">لاكيه</div>
+            <div class="chip" data-val="epoxy">ايبوكس</div>
+            <div class="chip" data-val="electrostatic">الكتروستاتيك</div>
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-bottom:14px;">
+          <button type="button" class="btn small" id="addSpecItemBtn">➕ سيف المواصفة دي وضيف واحدة تانية</button>
+        </div>
+
+        <div class="section-label">المواصفات المضافة للشغلانة دي</div>
+        <p id="specItemsEmpty">لسه مفيش مواصفات متضافة. اضغط "سيف" فوق عشان تضيفها هنا.</p>
+        <div id="specItemsList"></div>
       </div>
 
       <div class="form-section spec-card full">
@@ -668,20 +712,14 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
 
     <div class="panel-block spec-card" style="margin-bottom:18px;">
       <h3>⚙️ إعدادات التسعير</h3>
-      <div class="section-label" style="margin-top:6px;">سعر الحديد للكيلو (جنيه)</div>
+      <div class="section-label" style="margin-top:6px;">سعر الخام للكيلو (جنيه)</div>
       <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
-        <div class="field"><label>مربع</label><input type="number" min="0" step="0.5" id="pr_square"></div>
-        <div class="field"><label>أنجل</label><input type="number" min="0" step="0.5" id="pr_angle"></div>
-        <div class="field"><label>مواسير</label><input type="number" min="0" step="0.5" id="pr_pipes"></div>
         <div class="field"><label>صاج</label><input type="number" min="0" step="0.5" id="pr_sheet"></div>
-        <div class="field"><label>مكس</label><input type="number" min="0" step="0.5" id="pr_mix"></div>
+        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_boxes"></div>
+        <div class="field"><label>زوايا</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
+        <div class="field"><label>مواسير</label><input type="number" min="0" step="0.5" id="pr_pipes"></div>
+        <div class="field"><label>كمر</label><input type="number" min="0" step="0.5" id="pr_kamar"></div>
         <div class="field"><label>أجر يوم العامل</label><input type="number" min="0" step="5" id="pr_wage"></div>
-      </div>
-      <div class="section-label">تكلفة اللحام للكيلو حسب الكثافة (جنيه)</div>
-      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
-        <div class="field"><label>🔥 بسيط</label><input type="number" min="0" step="0.5" id="pr_weld_simple"></div>
-        <div class="field"><label>🔥🔥 متوسط</label><input type="number" min="0" step="0.5" id="pr_weld_medium"></div>
-        <div class="field"><label>🔥🔥🔥 كتير</label><input type="number" min="0" step="0.5" id="pr_weld_heavy"></div>
       </div>
       <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
         <div class="field"><label>تكلفة الدهان/التشطيب للكيلو</label><input type="number" min="0" step="0.5" id="pr_finish"></div>
@@ -705,7 +743,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       <div class="table-wrap">
         <table class="history-table" id="costTable">
           <thead><tr>
-            <th>الأوردر</th><th>العميل</th><th>خامة</th><th>عمالة</th><th>لحام</th><th>تشطيب</th><th>مصاريف</th><th>الإجمالي</th><th>سعر البيع</th><th>الربح</th>
+            <th>الأوردر</th><th>العميل</th><th>خامة</th><th>عمالة</th><th>تشطيب</th><th>مصاريف</th><th>الإجمالي</th><th>سعر البيع</th><th>الربح</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -804,12 +842,46 @@ function saveClientsMeta(){ localStorage.setItem(LS_CLIENTS, JSON.stringify(clie
 
 const LABELS = {
   productType: { gate:'🚪 بوابة', stand:'🏗️ استاند', shelf:'📦 رف مخزن', ladder:'🪜 سلم', barrier:'🔩 حاجز', other:'⚙️ تاني' },
-  ironType: { square:'مربع', angle:'أنجل', pipes:'مواسير', sheet:'صاج', mix:'مكس' },
-  welding: { simple:'🔥 بسيط', medium:'🔥🔥 متوسط', heavy:'🔥🔥🔥 كتير' },
+  ironType: { sheet:'صاج', boxes:'علب', zawya:'زوايا', pipes:'مواسير', kamar:'كمر', square:'مربع', angle:'أنجل', mix:'مكس' },
+  finishType: { liner:'بطانه', doco:'دوكو', lacquer:'لاكيه', epoxy:'ايبوكس', electrostatic:'الكتروستاتيك' },
   issue: { none:'✅ لا يوجد', missing_material:'خامة ناقصة', worker_absence:'غياب عمال', client_modification:'تعديل العميل' }
 };
 function productLabel(o){
   return LABELS.productType[o.productType] || o.productType || o.productTypeOther || '—';
+}
+
+/* Weight formula: Weight(kg) = Length(mm) × Width(mm) × Thickness(mm) × 0.000008 × عدد القطع */
+function computeWeight(length, width, thickness, pieceCount){
+  length=Number(length)||0; width=Number(width)||0; thickness=Number(thickness)||0; pieceCount=Number(pieceCount)||0;
+  const w = length * width * thickness * 0.000008 * pieceCount;
+  return Math.round(w*100)/100;
+}
+
+/* Get a normalized items[] array for an order, with backward-compat fallback
+   for legacy orders saved before the multi-spec-item structure existed. */
+function getOrderItems(o){
+  if(o.items && o.items.length) return o.items;
+  // legacy fallback — synthesize a single item from old flat fields
+  if(o.ironType || o.weight){
+    return [{
+      ironType: o.ironType || '',
+      length: o.length || 0,
+      width: o.width || 0,
+      thickness: o.thickness || 0,
+      pieceCount: o.pieceCount || 0,
+      weight: o.weight || 0,
+      finish: o.finish || 'no',
+      finishType: o.finishType || ''
+    }];
+  }
+  return [];
+}
+function itemsSummaryText(items){
+  if(!items.length) return '—';
+  return items.map(it=>{
+    const name = LABELS.ironType[it.ironType] || it.ironType || '—';
+    return `${name} (${it.weight||0} كجم × ${it.pieceCount||0} قطعة)`;
+  }).join('، ');
 }
 
 /* ============================================================
@@ -854,15 +926,13 @@ function setOrderStage(id, idx){
 ============================================================ */
 const LS_PRICING = 'prismops_pricing_settings';
 const DEFAULT_PRICING = {
-  ironRates:{ square:45, angle:42, pipes:48, sheet:40, mix:44 },
+  ironRates:{ sheet:40, boxes:38, zawya:42, pipes:48, kamar:46 },
   dailyWage:300,
-  weldingRates:{ simple:5, medium:10, heavy:18 },
   finishRate:8,
   overheadPercent:10
 };
 let pricing = Object.assign({}, DEFAULT_PRICING, JSON.parse(localStorage.getItem(LS_PRICING)||'{}'));
 pricing.ironRates = Object.assign({}, DEFAULT_PRICING.ironRates, pricing.ironRates||{});
-pricing.weldingRates = Object.assign({}, DEFAULT_PRICING.weldingRates, pricing.weldingRates||{});
 function savePricing(){ localStorage.setItem(LS_PRICING, JSON.stringify(pricing)); }
 
 function diffDays(d1,d2){
@@ -872,46 +942,42 @@ function diffDays(d1,d2){
 }
 
 function calcOrderCost(o){
-  const ironRate = pricing.ironRates[o.ironType] || 0;
-  const material = (o.weight||0) * ironRate;
+  const items = getOrderItems(o);
+  let material = 0, finish = 0;
+  items.forEach(it=>{
+    const rate = pricing.ironRates[it.ironType] || 0;
+    material += (it.weight||0) * rate;
+    if(it.finish==='yes') finish += (it.weight||0) * pricing.finishRate;
+  });
   const days = o.status==='delivered' ? diffDays(o.dateReceived,o.dateDelivered) : diffDays(o.dateReceived,o.dateRequired||o.dateReceived);
   const labor = (o.workers||0) * days * pricing.dailyWage;
-  const weldRate = pricing.weldingRates[o.welding] || 0;
-  const welding = (o.weight||0) * weldRate;
-  const finish = o.finish==='yes' ? (o.weight||0) * pricing.finishRate : 0;
-  const subtotal = material+labor+welding+finish;
+  const subtotal = material+labor+finish;
   const overhead = subtotal * (pricing.overheadPercent||0)/100;
   const total = subtotal + overhead;
   const sellingPrice = o.sellingPrice || 0;
   const profit = sellingPrice ? (sellingPrice - total) : null;
   const margin = (sellingPrice && sellingPrice>0) ? Math.round((profit/sellingPrice)*100) : null;
-  return { material, labor, welding, finish, overhead, total, days, sellingPrice, profit, margin };
+  return { material, labor, finish, overhead, total, days, sellingPrice, profit, margin };
 }
 function money(n){ return Math.round(n).toLocaleString('en-US'); }
 
 function fillPricingForm(){
-  document.getElementById('pr_square').value = pricing.ironRates.square;
-  document.getElementById('pr_angle').value = pricing.ironRates.angle;
-  document.getElementById('pr_pipes').value = pricing.ironRates.pipes;
   document.getElementById('pr_sheet').value = pricing.ironRates.sheet;
-  document.getElementById('pr_mix').value = pricing.ironRates.mix;
+  document.getElementById('pr_boxes').value = pricing.ironRates.boxes;
+  document.getElementById('pr_zawya').value = pricing.ironRates.zawya;
+  document.getElementById('pr_pipes').value = pricing.ironRates.pipes;
+  document.getElementById('pr_kamar').value = pricing.ironRates.kamar;
   document.getElementById('pr_wage').value = pricing.dailyWage;
-  document.getElementById('pr_weld_simple').value = pricing.weldingRates.simple;
-  document.getElementById('pr_weld_medium').value = pricing.weldingRates.medium;
-  document.getElementById('pr_weld_heavy').value = pricing.weldingRates.heavy;
   document.getElementById('pr_finish').value = pricing.finishRate;
   document.getElementById('pr_overhead').value = pricing.overheadPercent;
 }
 document.getElementById('pr_save').addEventListener('click', ()=>{
-  pricing.ironRates.square = parseFloat(document.getElementById('pr_square').value)||0;
-  pricing.ironRates.angle = parseFloat(document.getElementById('pr_angle').value)||0;
-  pricing.ironRates.pipes = parseFloat(document.getElementById('pr_pipes').value)||0;
   pricing.ironRates.sheet = parseFloat(document.getElementById('pr_sheet').value)||0;
-  pricing.ironRates.mix = parseFloat(document.getElementById('pr_mix').value)||0;
+  pricing.ironRates.boxes = parseFloat(document.getElementById('pr_boxes').value)||0;
+  pricing.ironRates.zawya = parseFloat(document.getElementById('pr_zawya').value)||0;
+  pricing.ironRates.pipes = parseFloat(document.getElementById('pr_pipes').value)||0;
+  pricing.ironRates.kamar = parseFloat(document.getElementById('pr_kamar').value)||0;
   pricing.dailyWage = parseFloat(document.getElementById('pr_wage').value)||0;
-  pricing.weldingRates.simple = parseFloat(document.getElementById('pr_weld_simple').value)||0;
-  pricing.weldingRates.medium = parseFloat(document.getElementById('pr_weld_medium').value)||0;
-  pricing.weldingRates.heavy = parseFloat(document.getElementById('pr_weld_heavy').value)||0;
   pricing.finishRate = parseFloat(document.getElementById('pr_finish').value)||0;
   pricing.overheadPercent = parseFloat(document.getElementById('pr_overhead').value)||0;
   savePricing();
@@ -926,7 +992,7 @@ function renderCosts(){
     document.getElementById('costAvg').textContent='0';
     document.getElementById('costProfit').textContent='0';
     document.getElementById('costMargin').textContent='0%';
-    document.querySelector('#costTable tbody').innerHTML = `<tr><td colspan="10" class="empty-note">لسه مفيش أوردرات لحساب تكلفتها.</td></tr>`;
+    document.querySelector('#costTable tbody').innerHTML = `<tr><td colspan="9" class="empty-note">لسه مفيش أوردرات لحساب تكلفتها.</td></tr>`;
     return;
   }
   let totalAll=0, profitSum=0, profitCount=0, marginSum=0, marginCount=0;
@@ -942,7 +1008,6 @@ function renderCosts(){
       <td>${esc(o.clientName)}</td>
       <td class="mono">${money(c.material)}</td>
       <td class="mono">${money(c.labor)}</td>
-      <td class="mono">${money(c.welding)}</td>
       <td class="mono">${money(c.finish)}</td>
       <td class="mono">${money(c.overhead)}</td>
       <td class="mono" style="color:var(--accent); font-weight:700;">${money(c.total)}</td>
@@ -976,11 +1041,11 @@ function saveOrderSellingPrice(id){
 }
 
 document.getElementById('exportCostsBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','المنتج','خامة','عمالة','لحام','تشطيب','مصاريف تشغيل','إجمالي التكلفة','سعر البيع','الربح','هامش الربح %'];
+  const header = ['ID','العميل','المنتج','خامة','عمالة','تشطيب','مصاريف تشغيل','إجمالي التكلفة','سعر البيع','الربح','هامش الربح %'];
   const rows = [header, ...orders.map(o=>{
     const c = calcOrderCost(o);
     const label = productLabel(o);
-    return [o.id, o.clientName, label, Math.round(c.material), Math.round(c.labor), Math.round(c.welding), Math.round(c.finish), Math.round(c.overhead), Math.round(c.total), o.sellingPrice||'', c.profit===null?'':Math.round(c.profit), c.margin===null?'':c.margin];
+    return [o.id, o.clientName, label, Math.round(c.material), Math.round(c.labor), Math.round(c.finish), Math.round(c.overhead), Math.round(c.total), o.sellingPrice||'', c.profit===null?'':Math.round(c.profit), c.margin===null?'':c.margin];
   })];
   downloadCSV('prismops_costs.csv', rows);
   toast('تم تحميل ملف التكاليف');
@@ -1058,8 +1123,90 @@ function wireChipGroup(id){
     });
   });
 }
-['ironTypeChips','weldingChips','finishChips'].forEach(wireChipGroup);
+['ironTypeChips','finishChips','finishTypeChips'].forEach(wireChipGroup);
 function getChipVal(id){ const sel=document.querySelector('#'+id+' .chip.sel'); return sel?sel.dataset.val:null; }
+
+/* show/hide finish-type sub-choices, and live weight readout */
+document.getElementById('finishChips').addEventListener('click', ()=>{
+  const val = getChipVal('finishChips');
+  document.getElementById('finishTypeField').style.display = (val==='yes') ? 'block' : 'none';
+  if(val!=='yes'){
+    document.querySelectorAll('#finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  }
+});
+
+function updateWeightReadout(){
+  const w = computeWeight(
+    document.getElementById('f_length').value,
+    document.getElementById('f_width').value,
+    document.getElementById('f_thickness').value,
+    document.getElementById('f_pieceCount').value
+  );
+  document.getElementById('computedWeightReadout').textContent = w + ' كجم';
+}
+['f_length','f_width','f_thickness','f_pieceCount'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateWeightReadout);
+});
+
+/* ============================================================
+   MULTI-SPEC ITEMS FOR ONE JOB
+============================================================ */
+let currentOrderItems = [];
+
+function resetSpecFields(){
+  document.querySelectorAll('#ironTypeChips .chip, #finishChips .chip, #finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('finishTypeField').style.display='none';
+  document.getElementById('f_length').value='';
+  document.getElementById('f_width').value='';
+  document.getElementById('f_thickness').value='';
+  document.getElementById('f_pieceCount').value='';
+  updateWeightReadout();
+}
+
+document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
+  const ironType = getChipVal('ironTypeChips');
+  if(!ironType){ toast('اختار نوع الخام الأول'); return; }
+  const length = parseFloat(document.getElementById('f_length').value)||0;
+  const width = parseFloat(document.getElementById('f_width').value)||0;
+  const thickness = parseFloat(document.getElementById('f_thickness').value)||0;
+  const pieceCount = parseInt(document.getElementById('f_pieceCount').value)||0;
+  if(!pieceCount){ toast('اكتب عدد القطع'); return; }
+  const finish = getChipVal('finishChips') || 'no';
+  const finishType = finish==='yes' ? (getChipVal('finishTypeChips') || '') : '';
+  if(finish==='yes' && !finishType){ toast('اختار نوع التشطيب'); return; }
+
+  const weight = computeWeight(length, width, thickness, pieceCount);
+  currentOrderItems.push({ ironType, length, width, thickness, pieceCount, weight, finish, finishType });
+  renderSpecItemsList();
+  resetSpecFields();
+  toast('اتضافت المواصفة دي للشغلانة ✓');
+});
+
+function renderSpecItemsList(){
+  const wrap = document.getElementById('specItemsList');
+  const empty = document.getElementById('specItemsEmpty');
+  if(currentOrderItems.length===0){
+    wrap.innerHTML='';
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  wrap.innerHTML = currentOrderItems.map((it,idx)=>{
+    const name = LABELS.ironType[it.ironType]||it.ironType;
+    const finishTxt = it.finish==='yes' ? ('تشطيب: '+(LABELS.finishType[it.finishType]||it.finishType)) : 'من غير تشطيب';
+    return `<div class="spec-item-row">
+      <div class="si-main">
+        <b>${name}</b> — ${it.weight} كجم × ${it.pieceCount} قطعة
+        <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; ${finishTxt}</div>
+      </div>
+      <button type="button" class="spec-item-remove" onclick="removeSpecItem(${idx})">✕</button>
+    </div>`;
+  }).join('');
+}
+function removeSpecItem(idx){
+  currentOrderItems.splice(idx,1);
+  renderSpecItemsList();
+}
 
 /* ============================================================
    NEW ORDER FORM
@@ -1072,6 +1219,10 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
   if(!jobName){ toast('لازم تكتب اسم الشغلانة'); return; }
   const productType = document.getElementById('f_productType').value.trim();
   if(!productType){ toast('اكتب نوع المنتج'); return; }
+  if(currentOrderItems.length===0){ toast('ضيف مواصفة واحدة على الأقل واضغط "سيف" قبل ما تحفظ الأوردر'); return; }
+
+  const totalWeight = currentOrderItems.reduce((s,it)=>s+(it.weight||0),0);
+  const totalPieces = currentOrderItems.reduce((s,it)=>s+(it.pieceCount||0),0);
 
   const order = {
     id: Date.now().toString(36).toUpperCase(),
@@ -1082,11 +1233,9 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
     productType,
     productTypeOther: '',
     orderDesc: jobName,
-    ironType: getChipVal('ironTypeChips'),
-    weight: parseFloat(document.getElementById('f_weight').value) || 0,
-    pieceCount: parseInt(document.getElementById('f_pieceCount').value) || 0,
-    welding: getChipVal('weldingChips'),
-    finish: getChipVal('finishChips'),
+    items: currentOrderItems.slice(),
+    weight: Math.round(totalWeight*100)/100,
+    pieceCount: totalPieces,
     workers: parseInt(document.getElementById('f_workers').value) || 0,
     dateReceived: document.getElementById('f_dateReceived').value || todayStr(),
     dateRequired: document.getElementById('f_dateRequired').value || '',
@@ -1106,7 +1255,9 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
   saveClientsMeta();
 
   document.getElementById('orderForm').reset();
-  document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
+  currentOrderItems = [];
+  renderSpecItemsList();
+  resetSpecFields();
   toast('تم حفظ الأوردر ✓');
   renderDashboard();
 });
@@ -1213,6 +1364,18 @@ function openOrderModal(id){
   if(!o) return;
   const label = productLabel(o);
   const st = orderStatusInfo(o);
+  const items = getOrderItems(o);
+
+  const itemsRows = items.map(it=>{
+    const name = LABELS.ironType[it.ironType]||it.ironType||'—';
+    const finishTxt = it.finish==='yes' ? (LABELS.finishType[it.finishType]||it.finishType||'—') : 'لأ';
+    return `<div class="spec-item-row">
+      <div class="si-main">
+        <b>${name}</b> — ${it.weight||0} كجم × ${it.pieceCount||0} قطعة
+        <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; تشطيب: ${finishTxt}</div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="empty-note">مفيش مواصفات مسجلة.</p>';
 
   document.getElementById('om_title').textContent = '#'+o.id+' — '+esc(o.clientName);
   document.getElementById('om_body').innerHTML = `
@@ -1226,11 +1389,8 @@ function openOrderModal(id){
       <div class="d"><span class="k">اسم الشغلانة</span><span class="v">${esc(o.orderDesc)||'—'}</span></div>
       <div class="d"><span class="k">مهندس الشغلانة (العميل)</span><span class="v">${esc(o.clientEngineer)||'—'}</span></div>
       <div class="d"><span class="k">المهندس المنفذ</span><span class="v">${esc(o.executingEngineer)||'—'}</span></div>
-      <div class="d"><span class="k">نوع الحديد</span><span class="v">${LABELS.ironType[o.ironType]||'—'}</span></div>
-      <div class="d"><span class="k">اللحام</span><span class="v">${LABELS.welding[o.welding]||'—'}</span></div>
-      <div class="d"><span class="k">الوزن</span><span class="v mono">${o.weight||0} كجم</span></div>
-      <div class="d"><span class="k">عدد القطع</span><span class="v mono">${o.pieceCount||0}</span></div>
-      <div class="d"><span class="k">دهان/تشطيب</span><span class="v">${o.finish==='yes'?'أيوه':'لأ'}</span></div>
+      <div class="d"><span class="k">إجمالي الوزن</span><span class="v mono">${o.weight||0} كجم</span></div>
+      <div class="d"><span class="k">إجمالي عدد القطع</span><span class="v mono">${o.pieceCount||0}</span></div>
       <div class="d"><span class="k">عدد العمال</span><span class="v mono">${o.workers||0}</span></div>
       <div class="d"><span class="k">تاريخ الاستلام</span><span class="v mono">${fmtDate(o.dateReceived)}</span></div>
       <div class="d"><span class="k">التسليم المطلوب</span><span class="v mono">${fmtDate(o.dateRequired)}</span></div>
@@ -1238,17 +1398,18 @@ function openOrderModal(id){
       <div class="d"><span class="k">تاريخ التسليم الفعلي</span><span class="v mono">${fmtDate(o.dateDelivered)}</span></div>
       <div class="d"><span class="k">مشاكل حصلت</span><span class="v">${LABELS.issue[o.issue]||'—'}</span></div>` : ''}
     </div>
-    ${o.deliveryNotes ? `<div class="field"><label>ملاحظات التسليم</label><div style="font-size:12.5px;color:var(--ink-dim)">${esc(o.deliveryNotes)}</div></div>` : ''}
+    <div class="section-label">المواصفات</div>
+    ${itemsRows}
+    ${o.deliveryNotes ? `<div class="field" style="margin-top:12px;"><label>ملاحظات التسليم</label><div style="font-size:12.5px;color:var(--ink-dim)">${esc(o.deliveryNotes)}</div></div>` : ''}
   `;
 
   const c = calcOrderCost(o);
   const profitCls = c.profit===null ? '' : (c.profit>=0 ? 'profit-pos':'profit-neg');
   document.getElementById('om_body').innerHTML += `
-    <div class="cost-breakdown-box spec-card" style="margin-top:4px;">
+    <div class="cost-breakdown-box spec-card" style="margin-top:14px;">
       <div class="section-label">💰 تكلفة الأوردر</div>
       <div class="cost-line"><span>خامة (${o.weight||0} كجم)</span><span class="v">${money(c.material)}</span></div>
       <div class="cost-line"><span>عمالة (${o.workers||0} عامل × ${c.days} يوم)</span><span class="v">${money(c.labor)}</span></div>
-      <div class="cost-line"><span>لحام</span><span class="v">${money(c.welding)}</span></div>
       <div class="cost-line"><span>دهان/تشطيب</span><span class="v">${money(c.finish)}</span></div>
       <div class="cost-line"><span>مصاريف تشغيل (${pricing.overheadPercent}%)</span><span class="v">${money(c.overhead)}</span></div>
       <div class="cost-line total"><span>الإجمالي</span><span class="v" style="color:var(--accent)">${money(c.total)} ج.م</span></div>
@@ -1455,12 +1616,12 @@ function downloadCSV(filename, rows){
 }
 
 document.getElementById('exportOrdersBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','نوع المنتج','اسم الشغلانة','نوع الحديد','الوزن كجم','عدد القطع','اللحام','دهان','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
+  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','نوع المنتج','اسم الشغلانة','المواصفات (خامة/وزن/قطع/تشطيب)','إجمالي الوزن كجم','إجمالي عدد القطع','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
   const rows = [header, ...orders.map(o=>[
     o.id, o.clientName, o.clientPhone, o.clientEngineer||'', o.executingEngineer||'',
     productLabel(o),
-    o.orderDesc, LABELS.ironType[o.ironType]||'', o.weight, o.pieceCount,
-    LABELS.welding[o.welding]||'', o.finish, o.workers,
+    o.orderDesc, itemsSummaryText(getOrderItems(o)), o.weight, o.pieceCount,
+    o.workers,
     o.dateReceived, o.dateRequired, stageLabelText(o), o.status, o.dateDelivered, LABELS.issue[o.issue]||'', o.deliveryNotes
   ])];
   downloadCSV('prismops_orders.csv', rows);
@@ -1495,6 +1656,7 @@ renderDashboard();
 renderOrdersList();
 renderClientsGrid();
 renderCosts();
+renderSpecItemsList();
 </script>
 </body>
 </html>
