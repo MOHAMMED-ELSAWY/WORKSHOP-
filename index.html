@@ -52,6 +52,7 @@ body{
   padding-bottom:60px;
   -webkit-font-smoothing:antialiased;
   position:relative;
+  transition:background-color .3s var(--ease), color .3s var(--ease);
 }
 body::before{
   content:'';
@@ -159,7 +160,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
   position:relative;
   background:var(--panel);
   border:1px solid var(--line);
-  transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background-color .3s var(--ease);
 }
 .spec-card::before, .spec-card::after,
 .spec-corner-tl, .spec-corner-br{
@@ -212,7 +213,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .dash-grid{ display:grid; gap:18px; }
 @media(min-width:900px){ .dash-grid{ grid-template-columns:1.3fr 1fr; } }
 
-.panel-block{ background:var(--panel); border:1px solid var(--line); padding:16px; }
+.panel-block{ background:var(--panel); border:1px solid var(--line); padding:16px; transition:background-color .3s var(--ease), border-color .3s var(--ease); }
 .panel-block h3{ font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
 
 .alert-row{
@@ -494,12 +495,26 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         <div class="section-label">بيانات العميل</div>
         <div class="row2">
           <div class="field">
-            <label>اسم العميل <span class="req">*</span></label>
+            <label>👤 العميل <span class="req">*</span></label>
             <input type="text" id="f_clientName" required placeholder="مثال: مصنع الأمل">
           </div>
           <div class="field">
             <label>رقم الموبايل (اختياري)</label>
             <input type="tel" id="f_clientPhone" placeholder="01xxxxxxxxx">
+          </div>
+        </div>
+        <div class="field">
+          <label>🛠️ اسم الشغلانة <span class="req">*</span></label>
+          <input type="text" id="f_orderDesc" required placeholder="اسم أو وصف الشغلانة">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>📐 مهندس الشغلانة (بتاع العميل)</label>
+            <input type="text" id="f_clientEngineer" placeholder="اسم مهندس العميل المسؤول عن الشغلانة">
+          </div>
+          <div class="field">
+            <label>👷 المهندس المنفذ (عندك في المصنع)</label>
+            <input type="text" id="f_executingEngineer" placeholder="اسم المهندس اللي هيشرف على التنفيذ">
           </div>
         </div>
       </div>
@@ -509,10 +524,6 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         <div class="field">
           <label>نوع المنتج <span class="req">*</span></label>
           <input type="text" id="f_productType" required placeholder="اكتب أي حاجة عن المنتج: النوع، المقاس، الشكل...">
-        </div>
-        <div class="field">
-          <label>اسم / وصف الأوردر (اختياري)</label>
-          <input type="text" id="f_orderDesc">
         </div>
       </div>
 
@@ -638,7 +649,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         <h3>📜 سجل أوردرات العميل</h3>
         <div class="table-wrap">
           <table class="history-table" id="cd_table">
-            <thead><tr><th>الأوردر</th><th>الوزن</th><th>المرحلة</th><th>التسليم المطلوب</th><th>الحالة</th></tr></thead>
+            <thead><tr><th>الأوردر</th><th>الوزن</th><th>المهندس المنفذ</th><th>المرحلة</th><th>التسليم المطلوب</th><th>الحالة</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -1057,6 +1068,8 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
   e.preventDefault();
   const clientName = document.getElementById('f_clientName').value.trim();
   if(!clientName){ toast('لازم تكتب اسم العميل'); return; }
+  const jobName = document.getElementById('f_orderDesc').value.trim();
+  if(!jobName){ toast('لازم تكتب اسم الشغلانة'); return; }
   const productType = document.getElementById('f_productType').value.trim();
   if(!productType){ toast('اكتب نوع المنتج'); return; }
 
@@ -1064,9 +1077,11 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
     id: Date.now().toString(36).toUpperCase(),
     clientName,
     clientPhone: document.getElementById('f_clientPhone').value.trim(),
+    clientEngineer: document.getElementById('f_clientEngineer').value.trim(),
+    executingEngineer: document.getElementById('f_executingEngineer').value.trim(),
     productType,
     productTypeOther: '',
-    orderDesc: document.getElementById('f_orderDesc').value.trim(),
+    orderDesc: jobName,
     ironType: getChipVal('ironTypeChips'),
     weight: parseFloat(document.getElementById('f_weight').value) || 0,
     pieceCount: parseInt(document.getElementById('f_pieceCount').value) || 0,
@@ -1171,7 +1186,7 @@ function renderOrdersList(){
       <div>
         <div class="oc-id">#${o.id}</div>
         <div class="oc-title">${label}${o.orderDesc ? ' — '+esc(o.orderDesc):''}</div>
-        <div class="oc-client">👤 ${esc(o.clientName)}</div>
+        <div class="oc-client">👤 ${esc(o.clientName)}${o.executingEngineer ? ' &nbsp;·&nbsp; 👷 '+esc(o.executingEngineer) : ''}</div>
         <div class="oc-meta">
           <span>⚖ ${o.weight||0} كجم</span>
           <span>📦 ${o.pieceCount||0} قطعة</span>
@@ -1208,7 +1223,9 @@ function openOrderModal(id){
     </div>
     <div class="detail-grid">
       <div class="d"><span class="k">نوع المنتج</span><span class="v">${label}</span></div>
-      <div class="d"><span class="k">الوصف</span><span class="v">${esc(o.orderDesc)||'—'}</span></div>
+      <div class="d"><span class="k">اسم الشغلانة</span><span class="v">${esc(o.orderDesc)||'—'}</span></div>
+      <div class="d"><span class="k">مهندس الشغلانة (العميل)</span><span class="v">${esc(o.clientEngineer)||'—'}</span></div>
+      <div class="d"><span class="k">المهندس المنفذ</span><span class="v">${esc(o.executingEngineer)||'—'}</span></div>
       <div class="d"><span class="k">نوع الحديد</span><span class="v">${LABELS.ironType[o.ironType]||'—'}</span></div>
       <div class="d"><span class="k">اللحام</span><span class="v">${LABELS.welding[o.welding]||'—'}</span></div>
       <div class="d"><span class="k">الوزن</span><span class="v mono">${o.weight||0} كجم</span></div>
@@ -1386,6 +1403,7 @@ function openClientDetail(name){
     return `<tr onclick="closeAndOpenOrder('${o.id}')">
       <td>${label}${o.orderDesc?' — '+esc(o.orderDesc):''}<br><span class="mono" style="color:var(--ink-faint);font-size:10px;">#${o.id}</span></td>
       <td class="mono">${o.weight||0} كجم</td>
+      <td style="font-size:11.5px;">${esc(o.executingEngineer)||'—'}</td>
       <td style="color:var(--cyan);font-size:11.5px;">${stageLabelText(o)}</td>
       <td class="mono">${fmtDate(o.dateRequired)}</td>
       <td><span class="stamp ${st.cls}" style="font-size:9.5px;padding:2px 7px;">${st.text}</span></td>
@@ -1437,9 +1455,9 @@ function downloadCSV(filename, rows){
 }
 
 document.getElementById('exportOrdersBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','رقم الموبايل','نوع المنتج','الوصف','نوع الحديد','الوزن كجم','عدد القطع','اللحام','دهان','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
+  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','نوع المنتج','اسم الشغلانة','نوع الحديد','الوزن كجم','عدد القطع','اللحام','دهان','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
   const rows = [header, ...orders.map(o=>[
-    o.id, o.clientName, o.clientPhone,
+    o.id, o.clientName, o.clientPhone, o.clientEngineer||'', o.executingEngineer||'',
     productLabel(o),
     o.orderDesc, LABELS.ironType[o.ironType]||'', o.weight, o.pieceCount,
     LABELS.welding[o.welding]||'', o.finish, o.workers,
