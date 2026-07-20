@@ -579,6 +579,15 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
             <div class="chip" data-val="zawya">زوايا</div>
             <div class="chip" data-val="pipes"> مواسير كمر</div>
           </div>
+           <div class="field" id="spec_sheetSubtypeField" style="display:none">
+          <label>نوع الصاج</label>
+          <div class="chip-group" id="spec_sheetSubtypeChips">
+            <div class="chip" data-val="iron">حديد</div>
+            <div class="chip" data-val="stainless">استانلس</div>
+            <div class="chip" data-val="galvanized">مجلفن</div>
+            <div class="chip" data-val="aluminum">الومنيوم</div>
+            <div class="chip" data-val="copper">نحاس</div>
+          </div>
         </div>
        <div class="row2">
           <div class="field">
@@ -735,7 +744,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
     </div>
   </section>
 
-  <!-- ============ COSTS (NEW) ============ -->
+<!-- ============ COSTS (NEW) ============ -->
   <section class="view" id="view-costs">
 
     <div class="panel-block spec-card" style="margin-bottom:18px;">
@@ -743,15 +752,27 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       <div class="section-label" style="margin-top:6px;">سعر الخام للكيلو (جنيه)</div>
       <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
         <div class="field"><label>صاج</label><input type="number" min="0" step="0.5" id="pr_sheet"></div>
-        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_boxes"></div>
-        <div class="field"><label>زوايا</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
-        <div class="field"><label>مواسير</label><input type="number" min="0" step="0.5" id="pr_pipes"></div>
-        <div class="field"><label>كمر</label><input type="number" min="0" step="0.5" id="pr_kamar"></div>
+        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_box"></div>
+        <div class="field"><label>زوي</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
+        <div class="field"><label>مواسير كمر</label><input type="number" min="0" step="0.5" id="pr_pipe_beam"></div>
         <div class="field"><label>أجر يوم العامل</label><input type="number" min="0" step="5" id="pr_wage"></div>
-      </div>
-      <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
-        <div class="field"><label>تكلفة الدهان/التشطيب للكيلو</label><input type="number" min="0" step="0.5" id="pr_finish"></div>
         <div class="field"><label>نسبة مصاريف تشغيل إضافية %</label><input type="number" min="0" step="1" id="pr_overhead"></div>
+      </div>
+      <div class="section-label">تكلفة التشطيب للكيلو حسب النوع (جنيه)</div>
+      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="field"><label>بطانة</label><input type="number" min="0" step="0.5" id="pr_finish_primer"></div>
+        <div class="field"><label>دوكو</label><input type="number" min="0" step="0.5" id="pr_finish_duco"></div>
+        <div class="field"><label>لاكيه</label><input type="number" min="0" step="0.5" id="pr_finish_lacquer"></div>
+        <div class="field"><label>إيبوكس</label><input type="number" min="0" step="0.5" id="pr_finish_epoxy"></div>
+        <div class="field"><label>الكتروستاتيك</label><input type="number" min="0" step="0.5" id="pr_finish_electrostatic"></div>
+      </div>
+      <div class="section-label">سعر الصاج للكيلو حسب النوع (جنيه)</div>
+      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="field"><label>حديد</label><input type="number" min="0" step="0.5" id="pr_sheet_iron"></div>
+        <div class="field"><label>استانلس</label><input type="number" min="0" step="0.5" id="pr_sheet_stainless"></div>
+        <div class="field"><label>مجلفن</label><input type="number" min="0" step="0.5" id="pr_sheet_galvanized"></div>
+        <div class="field"><label>الومنيوم</label><input type="number" min="0" step="0.5" id="pr_sheet_aluminum"></div>
+        <div class="field"><label>نحاس</label><input type="number" min="0" step="0.5" id="pr_sheet_copper"></div>
       </div>
       <button class="btn small" id="pr_save">💾 حفظ إعدادات التسعير</button>
     </div>
@@ -778,6 +799,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       </div>
     </div>
   </section>
+
 
   <!-- ============ EXPORT ============ -->
   <section class="view" id="view-export">
