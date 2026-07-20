@@ -6,37 +6,40 @@
 <title>PrismOps — نظام تشغيل المصنع</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    PRISMOPS — TOKENS
+   Industrial dark theme: Slate base, Safety Yellow accent,
+   Emerald for success, Amber for in-progress, Red for danger.
 ============================================================ */
 :root{
-  --bg:#0a121c;
-  --bg-grid:#15293c;
-  --panel:#0e1c2a;
-  --panel-2:#0b1621;
-  --line:#22415c;
-  --line-soft:#173044;
-  --ink:#eef4f9;
-  --ink-dim:#8fa8bd;
-  --ink-faint:#5d7a92;
-  --accent:#ff6a00;
-  --accent-2:#ffab3d;
-  --accent-glow:rgba(255,106,0,.5);
-  --accent-dim:#c25b16;
-  --cyan:#22d3ee;
-  --cyan-glow:rgba(34,211,238,.4);
-  --cyan-dim:#1997ac;
-  --ok:#2ee878;
-  --ok-glow:rgba(46,232,120,.4);
-  --warn:#ffb703;
-  --warn-glow:rgba(255,183,3,.4);
-  --bad:#ff3b5c;
-  --bad-glow:rgba(255,59,92,.45);
+  --bg:#0f172a;
+  --bg-grid:#1e293b;
+  --panel:#1e293b;
+  --panel-2:#182338;
+  --line:#334155;
+  --line-soft:#293448;
+  --ink:#f8fafc;
+  --ink-dim:#94a3b8;
+  --ink-faint:#64748b;
+  --accent:#f59e0b;
+  --accent-2:#fbbf24;
+  --accent-glow:rgba(245,158,11,.45);
+  --accent-dim:#b8790a;
+  --cyan:#38bdf8;
+  --cyan-glow:rgba(56,189,248,.4);
+  --cyan-dim:#0ea5e9;
+  --ok:#10b981;
+  --ok-glow:rgba(16,185,129,.4);
+  --warn:#f97316;
+  --warn-glow:rgba(249,115,22,.4);
+  --bad:#ef4444;
+  --bad-glow:rgba(239,68,68,.45);
+  --font-d:'Changa',var(--font-a);
   --font-a:'IBM Plex Sans Arabic',sans-serif;
   --font-m:'IBM Plex Mono',monospace;
-  --radius:2px;
+  --radius:12px;
   --ease:cubic-bezier(.22,1,.36,1);
 }
 
@@ -54,25 +57,15 @@ body{
   position:relative;
   transition:background-color .3s var(--ease), color .3s var(--ease);
 }
-body::before{
-  content:'';
-  position:fixed; inset:-40px; z-index:-1; pointer-events:none;
-  background:
-    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/38px 38px,
-    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/38px 38px;
-  opacity:.55;
-  animation:gridDrift 40s linear infinite;
-}
 body::after{
   content:'';
   position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,106,0,.09), transparent 60%),
-    radial-gradient(ellipse 800px 500px at 100% 10%, rgba(34,211,238,.08), transparent 60%);
+    radial-gradient(ellipse 1100px 600px at 20% -10%, rgba(245,158,11,.06), transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 0%, rgba(56,189,248,.05), transparent 60%);
 }
-@keyframes gridDrift{ from{ background-position:0 0, 0 0; } to{ background-position:38px 38px, 38px 38px; } }
 
-::selection{background:var(--accent); color:#0a121c;}
+::selection{background:var(--accent); color:#0f172a;}
 
 button, input, select, textarea{ font-family:inherit; color:inherit; }
 
@@ -83,7 +76,7 @@ button, input, select, textarea{ font-family:inherit; color:inherit; }
 ============================================================ */
 header.top{
   position:sticky; top:0; z-index:40;
-  background:rgba(10,18,28,.92);
+  background:rgba(15,23,42,.94);
   backdrop-filter:blur(8px);
   border-bottom:1px solid var(--line);
 }
@@ -102,7 +95,7 @@ header.top{
 }
 .brand-mark svg{ transform:rotate(-45deg); width:18px; height:18px; }
 .brand-text h1{
-  font-size:16px; font-weight:700; letter-spacing:.5px;
+  font-size:17px; font-weight:700; letter-spacing:.5px; font-family:var(--font-d);
 }
 .brand-text p{
   font-size:10.5px; color:var(--ink-faint); font-family:var(--font-m);
@@ -128,9 +121,10 @@ nav.tabs{
 nav.tabs::-webkit-scrollbar{ display:none; }
 .tab-btn{
   background:transparent; border:1px solid transparent; border-bottom:none;
-  color:var(--ink-dim); padding:10px 16px 12px; font-size:13px; font-weight:600;
+  color:var(--ink-dim); padding:12px 16px 13px; font-size:13.5px; font-weight:600;
+  font-family:var(--font-d); letter-spacing:.2px;
   display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap;
-  border-radius:2px 2px 0 0; position:relative;
+  border-radius:8px 8px 0 0; position:relative; min-height:44px;
   transition:color .2s var(--ease);
 }
 .tab-btn svg{ width:15px; height:15px; opacity:.8; transition:opacity .2s; }
@@ -160,15 +154,10 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
   position:relative;
   background:var(--panel);
   border:1px solid var(--line);
-  transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background-color .3s var(--ease);
+  border-radius:var(--radius);
+  box-shadow:0 1px 2px rgba(0,0,0,.2), 0 8px 24px -16px rgba(0,0,0,.4);
+  transition:transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease), background-color .3s var(--ease);
 }
-.spec-card::before, .spec-card::after,
-.spec-corner-tl, .spec-corner-br{
-  content:''; position:absolute; width:9px; height:9px; pointer-events:none;
-  transition:box-shadow .25s var(--ease);
-}
-.spec-card::before{ top:-1px; right:-1px; border-top:2px solid var(--accent); border-right:2px solid var(--accent); }
-.spec-card::after{ bottom:-1px; left:-1px; border-bottom:2px solid var(--accent); border-left:2px solid var(--accent); }
 
 .section-label{
   display:flex; align-items:center; gap:10px;
@@ -177,18 +166,16 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 }
 .section-label::after{ content:''; flex:1; height:1px; background:var(--line); }
 
-/* stamp badge */
+/* status badge — clean pill */
 .stamp{
-  font-family:var(--font-m); font-size:10.5px; font-weight:700; letter-spacing:1px;
-  padding:3px 9px; border:1.5px solid currentColor; border-radius:3px;
-  transform:rotate(-4deg); display:inline-flex; align-items:center; gap:5px;
-  text-transform:uppercase;
+  font-family:var(--font-a); font-size:11.5px; font-weight:600; letter-spacing:0;
+  padding:5px 12px; border:none; border-radius:9999px;
+  display:inline-flex; align-items:center; gap:6px;
 }
-.stamp.ok{ color:var(--ok); box-shadow:0 0 10px -3px var(--ok-glow); }
-.stamp.warn{ color:var(--warn); box-shadow:0 0 10px -3px var(--warn-glow); }
-.stamp.bad{ color:var(--bad); box-shadow:0 0 10px -3px var(--bad-glow); animation:stampPulse 1.8s infinite; }
-@keyframes stampPulse{ 0%,100%{ box-shadow:0 0 10px -3px var(--bad-glow); } 50%{ box-shadow:0 0 16px 1px var(--bad-glow); } }
-.stamp::before{ content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+.stamp.ok{ color:#6ee7b7; background:rgba(16,185,129,.16); }
+.stamp.warn{ color:#fdba74; background:rgba(249,115,22,.16); }
+.stamp.bad{ color:#fca5a5; background:rgba(239,68,68,.16); }
+.stamp::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
 
 /* ============================================================
    DASHBOARD
@@ -199,22 +186,28 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 }
 @media(min-width:720px){ .kpi-row{ grid-template-columns:repeat(5,1fr); } }
 .kpi{
-  background:linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
-  border:1px solid var(--line); padding:14px 14px 12px;
-  border-right:2px solid var(--accent);
-  box-shadow:6px 0 18px -14px var(--accent-glow);
-  transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--radius); padding:14px 14px 12px;
+  border-inline-start:3px solid var(--accent);
+  box-shadow:0 1px 2px rgba(0,0,0,.2), 0 8px 20px -16px rgba(0,0,0,.4);
+  transition:transform .2s var(--ease), box-shadow .2s var(--ease);
   position:relative; overflow:hidden;
 }
-.kpi:hover{ transform:translateY(-2px); box-shadow:6px 0 22px -10px var(--accent-glow); }
-.kpi .num{ font-family:var(--font-m); font-size:26px; font-weight:700; direction:ltr; display:block; text-shadow:0 0 18px rgba(255,255,255,.06); }
+.kpi:hover{ transform:translateY(-2px); box-shadow:0 10px 24px -14px rgba(0,0,0,.5); }
+.kpi.kpi-bad{ border-inline-start-color:var(--bad); }
+.kpi.kpi-ok{ border-inline-start-color:var(--ok); }
+.kpi .num{ font-family:var(--font-d); font-size:27px; font-weight:700; direction:ltr; display:block; }
 .kpi .lbl{ font-size:11px; color:var(--ink-dim); margin-top:4px; }
+.kpi .trend{ font-family:var(--font-m); font-size:10.5px; margin-top:6px; display:flex; align-items:center; gap:4px; }
+.kpi .trend.up{ color:var(--ok); }
+.kpi .trend.down{ color:var(--bad); }
+.kpi .trend.flat{ color:var(--ink-faint); }
 
 .dash-grid{ display:grid; gap:18px; }
 @media(min-width:900px){ .dash-grid{ grid-template-columns:1.3fr 1fr; } }
 
 .panel-block{ background:var(--panel); border:1px solid var(--line); padding:16px; transition:background-color .3s var(--ease), border-color .3s var(--ease); }
-.panel-block h3{ font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.panel-block h3{ font-size:14px; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-family:var(--font-d); font-weight:600; letter-spacing:.2px; }
 
 .alert-row{
   display:flex; align-items:center; gap:10px; padding:9px 0;
@@ -231,7 +224,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
   border-bottom:1px dashed var(--line-soft); font-size:12.5px; cursor:pointer;
   border-radius:2px; transition:background .2s var(--ease), padding-right .2s var(--ease);
 }
-.recent-item:hover{ background:rgba(34,211,238,.05); padding-right:12px; }
+.recent-item:hover{ background:rgba(56,189,248,.06); padding-right:12px; }
 .recent-item:last-child{ border-bottom:none; }
 .recent-item:hover .rname{ color:var(--accent); }
 .recent-item .rid{ font-family:var(--font-m); color:var(--ink-faint); font-size:10.5px; direction:ltr; }
@@ -251,52 +244,40 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .field label .req{ color:var(--accent); }
 .field input[type=text], .field input[type=number], .field input[type=date], .field input[type=tel], .field textarea{
   width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
-  padding:10px 11px; font-size:13.5px; font-family:var(--font-a);
+  padding:12px 13px; font-size:14px; font-family:var(--font-a); border-radius:8px;
+  min-height:48px;
 }
-.field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,106,0,.12); }
+.field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(245,158,11,.15); }
 .field textarea{ resize:vertical; min-height:60px; }
 
-.chip-group{ display:flex; flex-wrap:wrap; gap:7px; }
+.chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
 .chip{
   border:1px solid var(--line); background:var(--panel-2); color:var(--ink-dim);
-  padding:8px 13px; font-size:12.5px; cursor:pointer; transition:all .2s var(--ease); display:flex; align-items:center; gap:6px;
+  padding:10px 15px; font-size:13px; cursor:pointer; transition:all .2s var(--ease); display:flex; align-items:center; gap:6px;
+  border-radius:9px; min-height:44px;
 }
-.chip:hover{ border-color:var(--cyan-dim); color:var(--ink); transform:translateY(-1px); }
-.chip.sel{ border-color:var(--accent); color:var(--accent); background:rgba(255,106,0,.1); box-shadow:0 0 12px -3px var(--accent-glow); }
+.chip:hover{ border-color:var(--cyan-dim); color:var(--ink); }
+.chip.sel{ border-color:var(--accent); color:var(--accent-2); background:rgba(245,158,11,.12); }
 
 .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
 .btn{
-  border:1px solid var(--accent); background:linear-gradient(135deg, var(--accent-2), var(--accent)); color:#0a121c;
-  padding:12px 20px; font-size:13.5px; font-weight:700; cursor:pointer;
-  display:inline-flex; align-items:center; gap:8px; letter-spacing:.3px;
-  transition:transform .2s var(--ease), box-shadow .2s var(--ease);
+  border:1px solid var(--accent); background:var(--accent); color:#0f172a;
+  padding:13px 22px; font-size:13.5px; font-weight:700; cursor:pointer;
+  display:inline-flex; align-items:center; gap:8px; letter-spacing:.2px;
+  border-radius:9px; min-height:48px;
+  transition:transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
 }
-.btn:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -8px var(--accent-glow); }
-.btn:active{ transform:translateY(0); }
+.btn:hover{ background:var(--accent-2); box-shadow:0 8px 20px -8px var(--accent-glow); }
+.btn:active{ transform:scale(.98); }
 .btn.ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
-.btn.ghost:hover{ border-color:var(--cyan); color:var(--cyan); box-shadow:0 8px 20px -10px var(--cyan-glow); }
+.btn.ghost:hover{ border-color:var(--cyan); color:var(--cyan); background:rgba(56,189,248,.08); }
 .btn.danger{ background:transparent; color:var(--bad); border-color:var(--bad); }
-.btn.danger:hover{ background:rgba(255,59,92,.1); box-shadow:0 8px 20px -10px var(--bad-glow); }
-.btn.small{ padding:8px 14px; font-size:12px; }
+.btn.danger:hover{ background:rgba(239,68,68,.1); }
+.btn.small{ padding:9px 16px; font-size:12.5px; min-height:40px; }
 .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
 
 .form-actions{ grid-column:1/-1; display:flex; justify-content:flex-start; margin-top:4px; }
-
-.spec-item-row{
-  display:flex; justify-content:space-between; align-items:center; gap:10px;
-  padding:10px 12px; background:var(--panel-2); border:1px solid var(--line);
-  margin-bottom:8px; font-size:12px;
-}
-.spec-item-row .si-main{ font-weight:600; }
-.spec-item-row .si-meta{ color:var(--ink-dim); font-family:var(--font-m); font-size:11px; direction:ltr; text-align:right; margin-top:3px; }
-.spec-item-row .si-remove{
-  background:none; border:1px solid var(--bad); color:var(--bad); border-radius:50%;
-  width:22px; height:22px; flex:none; cursor:pointer; font-size:12px; line-height:1;
-  display:flex; align-items:center; justify-content:center; transition:.2s var(--ease);
-}
-.spec-item-row .si-remove:hover{ background:rgba(255,59,92,.12); }
-.spec-items-empty{ color:var(--ink-faint); font-size:12px; padding:6px 0; }
 
 /* ============================================================
    STAGE TRACKER — production process
@@ -311,18 +292,20 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
   display:flex; align-items:center; justify-content:center; font-family:var(--font-m); font-size:10px;
   color:var(--ink-faint); z-index:2; transition:all .2s var(--ease); flex:none;
 }
-.stage-step.done .circle{ border-color:var(--ok); color:var(--ok); background:rgba(46,232,120,.12); box-shadow:0 0 10px -3px var(--ok-glow); }
+.stage-step.done .circle{ border-color:var(--ok); color:var(--ok); background:rgba(16,185,129,.14); box-shadow:0 0 10px -3px var(--ok-glow); }
 .stage-step.done .line{ background:var(--ok); }
-.stage-step.current .circle{ border-color:var(--accent); color:var(--accent); background:rgba(255,106,0,.16); animation:stepGlow 1.6s infinite; }
-@keyframes stepGlow{ 0%,100%{ box-shadow:0 0 0 3px rgba(255,106,0,.14); } 50%{ box-shadow:0 0 0 6px rgba(255,106,0,.05); } }
+.stage-step.current .circle{ border-color:var(--warn); color:var(--warn); background:rgba(249,115,22,.16); animation:stepGlow 1.6s infinite; }
+@keyframes stepGlow{ 0%,100%{ box-shadow:0 0 0 3px rgba(249,115,22,.16); } 50%{ box-shadow:0 0 0 6px rgba(249,115,22,.05); } }
 .stage-step:hover .circle{ border-color:var(--cyan); transform:scale(1.08); }
 .stage-step .lbl{ font-size:9px; color:var(--ink-faint); margin-top:6px; text-align:center; max-width:62px; line-height:1.3; }
 .stage-step.done .lbl, .stage-step.current .lbl{ color:var(--ink); }
 
-.stage-mini{ display:flex; align-items:center; gap:8px; margin-top:8px; }
-.stage-mini-bar{ flex:1; height:4px; background:var(--line-soft); position:relative; overflow:hidden; max-width:140px; border-radius:3px; }
-.stage-mini-bar span{ position:absolute; top:0; right:0; height:100%; background:linear-gradient(90deg, var(--accent-2), var(--accent)); box-shadow:0 0 8px var(--accent-glow); width:0; transition:width .7s var(--ease); }
+.stage-mini{ display:flex; flex-direction:column; gap:5px; margin-top:8px; }
 .stage-mini-label{ font-size:10.5px; color:var(--cyan); white-space:nowrap; }
+.mini-pipeline{ display:flex; align-items:center; gap:3px; max-width:220px; }
+.mini-pipeline .mp-seg{ flex:1; height:5px; border-radius:3px; background:var(--line-soft); transition:background .3s var(--ease); }
+.mini-pipeline .mp-seg.filled{ background:var(--ok); }
+.mini-pipeline .mp-seg.current{ background:var(--warn); box-shadow:0 0 6px -1px var(--warn-glow); }
 
 /* ============================================================
    ORDERS LIST
@@ -347,7 +330,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 }
 .order-card:hover{ border-color:var(--cyan-dim); transform:translateY(-3px); box-shadow:0 10px 24px -12px rgba(0,0,0,.5), 0 0 0 1px var(--cyan-glow); }
 .order-card .oc-id{ font-family:var(--font-m); font-size:10px; color:var(--ink-faint); direction:ltr; margin-bottom:3px; }
-.order-card .oc-title{ font-size:14px; font-weight:700; }
+.order-card .oc-title{ font-size:15px; font-weight:700; font-family:var(--font-d); }
 .order-card .oc-client{ font-size:11.5px; color:var(--cyan); margin-top:2px; }
 .order-card .oc-meta{ display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }
 .order-card .oc-meta span{ font-size:11px; color:var(--ink-dim); font-family:var(--font-m); direction:ltr; }
@@ -363,7 +346,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .client-card{ padding:16px; cursor:pointer; }
 .client-card:hover{ transform:translateY(-3px); box-shadow:0 10px 24px -12px rgba(0,0,0,.5), 0 0 0 1px var(--accent-glow); border-color:var(--accent-dim); }
 .client-card .cc-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
-.client-card .cc-name{ font-size:15px; font-weight:700; }
+.client-card .cc-name{ font-size:16px; font-weight:700; font-family:var(--font-d); }
 .client-card .cc-name .ic{ color:var(--accent); margin-inline-end:6px; }
 .client-card .cc-badge{ font-family:var(--font-m); font-size:10px; color:var(--ink-faint); }
 .client-stat-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
@@ -378,17 +361,17 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
   cursor:pointer; font-size:12.5px; margin-bottom:16px; padding:0;
 }
 .detail-head{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; padding:18px; margin-bottom:16px; }
-.detail-head h2{ font-size:19px; }
+.detail-head h2{ font-size:21px; font-family:var(--font-d); }
 .detail-contact{ margin-top:6px; font-size:12px; color:var(--ink-dim); font-family:var(--font-m); direction:ltr; text-align:right; }
 .detail-kpis{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
 @media(min-width:600px){ .detail-kpis{ grid-template-columns:repeat(4,1fr); } }
 
 .history-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
-.history-table th{ text-align:right; font-size:10.5px; color:var(--ink-faint); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line); letter-spacing:.5px;}
+.history-table th{ text-align:right; font-size:10.5px; color:var(--ink-faint); font-weight:600; padding:10px; border-bottom:1px solid var(--line); letter-spacing:.5px; position:sticky; top:0; background:var(--panel); z-index:2;}
 .history-table td{ padding:10px; border-bottom:1px solid var(--line-soft); }
 .history-table tr{ cursor:pointer; }
 .history-table tr:hover td{ color:var(--accent); }
-.table-wrap{ overflow-x:auto; }
+.table-wrap{ overflow:auto; max-height:480px; border-radius:var(--radius); }
 
 .notes-box textarea{ width:100%; min-height:80px; background:var(--panel-2); border:1px solid var(--line); color:var(--ink); padding:10px; font-size:12.5px; margin-top:8px;}
 
@@ -430,7 +413,7 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .modal::before{ content:''; position:absolute; top:-1px; right:-1px; width:11px; height:11px; border-top:2px solid var(--accent); border-right:2px solid var(--accent); }
 .modal::after{ content:''; position:absolute; bottom:-1px; left:-1px; width:11px; height:11px; border-bottom:2px solid var(--accent); border-left:2px solid var(--accent); }
 .modal-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line); }
-.modal-head h3{ font-size:14.5px; }
+.modal-head h3{ font-size:15.5px; font-family:var(--font-d); font-weight:600; }
 .modal-close{ background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; line-height:1; }
 .modal-body{ padding:18px; }
 .modal-foot{ padding:14px 18px; border-top:1px solid var(--line); display:flex; gap:10px; flex-wrap:wrap; }
@@ -441,12 +424,61 @@ main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
 .detail-grid .d .v{ font-weight:600; }
 
 .toast{
-  position:fixed; bottom:22px; right:50%; transform:translateX(50%); z-index:200;
-  background:linear-gradient(135deg, var(--accent-2), var(--ok)); color:#0a121c; padding:11px 22px; font-size:13px; font-weight:700;
-  border-radius:3px; display:none; box-shadow:0 10px 30px -8px var(--ok-glow), 0 6px 20px rgba(0,0,0,.4);
+  position:fixed; bottom:22px; inset-inline-start:22px; z-index:200;
+  background:var(--panel); color:var(--ink); padding:13px 18px; font-size:13px; font-weight:600;
+  border:1px solid var(--line); border-inline-start:3px solid var(--ok);
+  border-radius:10px; display:none; box-shadow:0 12px 32px -10px rgba(0,0,0,.5);
+  max-width:320px;
 }
-.toast.show{ display:block; animation:toastin .35s var(--ease); }
-@keyframes toastin{ 0%{opacity:0; transform:translateX(50%) translateY(14px) scale(.9);} 60%{opacity:1; transform:translateX(50%) translateY(-3px) scale(1.02);} 100%{opacity:1; transform:translateX(50%) translateY(0) scale(1);} }
+.toast.show{ display:block; animation:toastin .3s var(--ease); }
+@keyframes toastin{ 0%{opacity:0; transform:translateY(14px) scale(.96);} 100%{opacity:1; transform:translateY(0) scale(1);} }
+
+/* ============================================================
+   SPEC ITEMS (multi-spec per job)
+============================================================ */
+.spec-item-row{
+  display:flex; align-items:center; gap:10px; padding:11px 13px; margin-bottom:8px; border-radius:9px;
+  background:var(--panel-2); border:1px solid var(--line-soft); font-size:12px; border-inline-start:3px solid var(--cyan);
+}
+.spec-item-row .si-main{ flex:1; }
+.spec-item-row .si-main b{ color:var(--ink); }
+.spec-item-row .si-meta{ color:var(--ink-faint); font-family:var(--font-m); font-size:10.5px; direction:ltr; text-align:right; margin-top:2px; }
+.spec-item-remove{ background:none; border:1px solid var(--bad); color:var(--bad); width:32px; height:32px; border-radius:8px; cursor:pointer; flex:none; font-size:14px; line-height:1; min-height:auto; }
+.spec-item-remove:hover{ background:rgba(239,68,68,.12); }
+.weight-readout{
+  background:var(--panel-2); border:1px dashed var(--line); padding:12px 13px; font-size:14px; border-radius:8px;
+  font-family:var(--font-m); direction:ltr; text-align:right; color:var(--cyan); min-height:48px; display:flex; align-items:center; justify-content:flex-end;
+}
+#specItemsEmpty{ color:var(--ink-faint); font-size:12px; padding:4px 0 10px; }
+
+/* live cost preview */
+.cost-preview-box{ background:var(--panel-2); border:1px dashed var(--line); border-radius:8px; padding:11px 13px; margin-bottom:14px; }
+.cost-preview-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12px; color:var(--ink-dim); padding:3px 0; }
+.cost-preview-row .v{ font-family:var(--font-m); direction:ltr; color:var(--ink); font-weight:600; }
+.cost-preview-row.total{ border-top:1px dashed var(--line-soft); margin-top:5px; padding-top:7px; font-weight:700; color:var(--ink-dim); }
+.cost-preview-row.total .v{ color:var(--accent-2); font-size:13px; }
+
+/* +/- steppers for numeric fields */
+.stepper-field{ display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; min-height:48px; }
+.stepper-field input{ border:none !important; border-radius:0 !important; flex:1; min-width:0; text-align:center; }
+.stepper-field input:focus{ box-shadow:none !important; }
+.stepper-btn{
+  width:44px; min-height:48px; background:var(--panel-2); border:none; color:var(--ink-dim);
+  font-size:19px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  user-select:none; transition:background .15s var(--ease), color .15s var(--ease);
+}
+.stepper-btn:hover{ background:var(--line-soft); color:var(--accent-2); }
+.stepper-btn:active{ background:var(--accent); color:#0f172a; }
+
+/* skeleton shimmer loaders (tab-switch loading state) */
+.skel-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 8px; }
+.skel-block{
+  height:14px; border-radius:6px;
+  background:linear-gradient(90deg, var(--line-soft) 25%, var(--line) 37%, var(--line-soft) 63%);
+  background-size:400% 100%;
+  animation:skelShimmer 1.3s ease infinite;
+}
+@keyframes skelShimmer{ 0%{ background-position:100% 0; } 100%{ background-position:0 0; } }
 
 footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family:var(--font-m); margin-top:40px; padding:0 18px; }
 
@@ -483,11 +515,11 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
   <!-- ============ DASHBOARD ============ -->
   <section class="view active" id="view-dashboard">
     <div class="kpi-row">
-      <div class="kpi"><span class="num mono" id="kpiTotal">0</span><span class="lbl">إجمالي الأوردرات</span></div>
-      <div class="kpi"><span class="num mono" id="kpiActive">0</span><span class="lbl">قيد التنفيذ</span></div>
-      <div class="kpi"><span class="num mono" id="kpiLate">0</span><span class="lbl">متأخرة</span></div>
-      <div class="kpi"><span class="num mono" id="kpiDelivered">0</span><span class="lbl">تم التسليم</span></div>
-      <div class="kpi"><span class="num mono" id="kpiClients">0</span><span class="lbl">عدد العملاء</span></div>
+      <div class="kpi"><span class="num mono" id="kpiTotal">0</span><span class="lbl">إجمالي الأوردرات</span><span class="trend" id="trendTotal"></span></div>
+      <div class="kpi"><span class="num mono" id="kpiActive">0</span><span class="lbl">قيد التنفيذ</span><span class="trend" id="trendActive"></span></div>
+      <div class="kpi kpi-bad"><span class="num mono" id="kpiLate">0</span><span class="lbl">متأخرة</span><span class="trend" id="trendLate"></span></div>
+      <div class="kpi kpi-ok"><span class="num mono" id="kpiDelivered">0</span><span class="lbl">تم التسليم</span><span class="trend" id="trendDelivered"></span></div>
+      <div class="kpi"><span class="num mono" id="kpiClients">0</span><span class="lbl">عدد العملاء</span><span class="trend" id="trendClients"></span></div>
     </div>
 
     <div class="dash-grid">
@@ -534,76 +566,83 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         </div>
       </div>
 
-      <div class="form-section spec-card full" id="specBuilderCard">
-        <div class="section-label">المواصفات</div>
+      <div class="form-section spec-card">
+        <div class="section-label">بيانات الأوردر</div>
+        <div class="field">
+          <label>نوع المنتج <span class="req">*</span></label>
+          <input type="text" id="f_productType" required placeholder="اكتب أي حاجة عن المنتج: النوع، المقاس، الشكل...">
+        </div>
+      </div>
+
+      <div class="form-section spec-card full">
+        <div class="section-label">المواصفات (تقدر تضيف كذا مواصفة في نفس الشغلانة)</div>
 
         <div class="field">
           <label>نوع الخام</label>
-          <div class="chip-group" id="spec_ironTypeChips">
+          <div class="chip-group" id="ironTypeChips">
             <div class="chip" data-val="sheet">صاج</div>
-            <div class="chip" data-val="box">علب</div>
-            <div class="chip" data-val="zawya">زوي</div>
-            <div class="chip" data-val="pipe_beam">مواسير كمر</div>
-          </div>
-        </div>
-        <div class="field" id="spec_sheetSubtypeField" style="display:none">
-          <label>نوع الصاج</label>
-          <div class="chip-group" id="spec_sheetSubtypeChips">
-            <div class="chip" data-val="iron">حديد</div>
-            <div class="chip" data-val="stainless">استانلس</div>
-            <div class="chip" data-val="galvanized">مجلفن</div>
-            <div class="chip" data-val="aluminum">الومنيوم</div>
-            <div class="chip" data-val="copper">نحاس</div>
-          </div>
-        </div>
-
-        <div class="row2" style="grid-template-columns:repeat(3,1fr);">
-          <div class="field">
-            <label>الطول (مم)</label>
-            <input type="number" id="spec_length" min="0" step="0.1">
-          </div>
-          <div class="field">
-            <label>العرض (مم)</label>
-            <input type="number" id="spec_width" min="0" step="0.1">
-          </div>
-          <div class="field">
-            <label>السُمك (مم)</label>
-            <input type="number" id="spec_thickness" min="0" step="0.1">
+            <div class="chip" data-val="boxes">علب</div>
+            <div class="chip" data-val="zawya">زوايا</div>
+            <div class="chip" data-val="pipes">مواسير</div>
+            <div class="chip" data-val="kamar">كمر</div>
           </div>
         </div>
 
         <div class="row2">
           <div class="field">
-            <label>عدد القطع</label>
-            <input type="number" id="spec_pieceCount" min="0" step="1">
+            <label>الطول (مم)</label>
+            <input type="number" id="f_length" min="0" step="0.1">
           </div>
           <div class="field">
-            <label>الوزن التقريبي (كيلو) — بيتحسب أوتوماتيك</label>
-            <input type="text" id="spec_weight" class="mono" readonly value="0" style="color:var(--accent); font-weight:700;">
+            <label>العرض (مم)</label>
+            <input type="number" id="f_width" min="0" step="0.1">
           </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>السمك (مم)</label>
+            <input type="number" id="f_thickness" min="0" step="0.1">
+          </div>
+          <div class="field">
+            <label>عدد القطع</label>
+            <input type="number" id="f_pieceCount" min="0" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label>⚖️ الوزن التقريبي المحسوب (كيلو)</label>
+          <div class="weight-readout" id="computedWeightReadout">0 كجم</div>
         </div>
 
         <div class="field">
           <label>فيه دهان / تشطيب؟</label>
-          <div class="chip-group" id="spec_finishChips">
-            <div class="chip sel" data-val="no">لأ</div>
+          <div class="chip-group" id="finishChips">
+            <div class="chip" data-val="no">لأ</div>
             <div class="chip" data-val="yes">أيوه</div>
           </div>
         </div>
-        <div class="field" id="spec_finishTypeField" style="display:none">
+        <div class="field" id="finishTypeField" style="display:none;">
           <label>نوع التشطيب</label>
-          <div class="chip-group" id="spec_finishTypeChips">
-            <div class="chip" data-val="primer">بطانة</div>
-            <div class="chip" data-val="duco">دوكو</div>
+          <div class="chip-group" id="finishTypeChips">
+            <div class="chip" data-val="liner">بطانه</div>
+            <div class="chip" data-val="doco">دوكو</div>
             <div class="chip" data-val="lacquer">لاكيه</div>
-            <div class="chip" data-val="epoxy">إيبوكس</div>
+            <div class="chip" data-val="epoxy">ايبوكس</div>
             <div class="chip" data-val="electrostatic">الكتروستاتيك</div>
           </div>
         </div>
 
-        <button type="button" class="btn small" id="addSpecItemBtn">💾 حفظ وإضافة القطعة دي</button>
+        <div class="cost-preview-box" id="costPreviewBox">
+          <div class="cost-preview-row"><span>💰 تكلفة القطعة دي تقريبًا</span><span class="v" id="cp_piece">0 ج.م</span></div>
+          <div class="cost-preview-row total"><span>إجمالي تكلفة الشغلانة لحد دلوقتي</span><span class="v" id="cp_total">0 ج.م</span></div>
+        </div>
 
-        <div id="specItemsList" style="margin-top:16px;"></div>
+        <div class="form-actions" style="margin-bottom:14px;">
+          <button type="button" class="btn small" id="addSpecItemBtn">➕ سيف المواصفة دي وضيف واحدة تانية</button>
+        </div>
+
+        <div class="section-label">المواصفات المضافة للشغلانة دي</div>
+        <p id="specItemsEmpty">لسه مفيش مواصفات متضافة. اضغط "سيف" فوق عشان تضيفها هنا.</p>
+        <div id="specItemsList"></div>
       </div>
 
       <div class="form-section spec-card full">
@@ -642,8 +681,9 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       </div>
       <div class="filter-set" id="orderFilterSet">
         <button class="active" data-f="all">الكل</button>
-        <button data-f="pending">قيد التنفيذ</button>
         <button data-f="late">متأخرة</button>
+        <button data-f="urgent">عاجلة</button>
+        <button data-f="pending">جاري التنفيذ</button>
         <button data-f="delivered">تم التسليم</button>
       </div>
     </div>
@@ -711,27 +751,15 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       <div class="section-label" style="margin-top:6px;">سعر الخام للكيلو (جنيه)</div>
       <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
         <div class="field"><label>صاج</label><input type="number" min="0" step="0.5" id="pr_sheet"></div>
-        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_box"></div>
-        <div class="field"><label>زوي</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
-        <div class="field"><label>مواسير كمر</label><input type="number" min="0" step="0.5" id="pr_pipe_beam"></div>
+        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_boxes"></div>
+        <div class="field"><label>زوايا</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
+        <div class="field"><label>مواسير</label><input type="number" min="0" step="0.5" id="pr_pipes"></div>
+        <div class="field"><label>كمر</label><input type="number" min="0" step="0.5" id="pr_kamar"></div>
         <div class="field"><label>أجر يوم العامل</label><input type="number" min="0" step="5" id="pr_wage"></div>
+      </div>
+      <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
+        <div class="field"><label>تكلفة الدهان/التشطيب للكيلو</label><input type="number" min="0" step="0.5" id="pr_finish"></div>
         <div class="field"><label>نسبة مصاريف تشغيل إضافية %</label><input type="number" min="0" step="1" id="pr_overhead"></div>
-      </div>
-      <div class="section-label">تكلفة التشطيب للكيلو حسب النوع (جنيه)</div>
-      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
-        <div class="field"><label>بطانة</label><input type="number" min="0" step="0.5" id="pr_finish_primer"></div>
-        <div class="field"><label>دوكو</label><input type="number" min="0" step="0.5" id="pr_finish_duco"></div>
-        <div class="field"><label>لاكيه</label><input type="number" min="0" step="0.5" id="pr_finish_lacquer"></div>
-        <div class="field"><label>إيبوكس</label><input type="number" min="0" step="0.5" id="pr_finish_epoxy"></div>
-        <div class="field"><label>الكتروستاتيك</label><input type="number" min="0" step="0.5" id="pr_finish_electrostatic"></div>
-      </div>
-      <div class="section-label">سعر الصاج للكيلو حسب النوع (جنيه)</div>
-      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
-        <div class="field"><label>حديد</label><input type="number" min="0" step="0.5" id="pr_sheet_iron"></div>
-        <div class="field"><label>استانلس</label><input type="number" min="0" step="0.5" id="pr_sheet_stainless"></div>
-        <div class="field"><label>مجلفن</label><input type="number" min="0" step="0.5" id="pr_sheet_galvanized"></div>
-        <div class="field"><label>الومنيوم</label><input type="number" min="0" step="0.5" id="pr_sheet_aluminum"></div>
-        <div class="field"><label>نحاس</label><input type="number" min="0" step="0.5" id="pr_sheet_copper"></div>
       </div>
       <button class="btn small" id="pr_save">💾 حفظ إعدادات التسعير</button>
     </div>
@@ -850,14 +878,46 @@ function saveClientsMeta(){ localStorage.setItem(LS_CLIENTS, JSON.stringify(clie
 
 const LABELS = {
   productType: { gate:'🚪 بوابة', stand:'🏗️ استاند', shelf:'📦 رف مخزن', ladder:'🪜 سلم', barrier:'🔩 حاجز', other:'⚙️ تاني' },
-  ironType: { square:'مربع', angle:'أنجل', pipes:'مواسير', sheet:'صاج', mix:'مكس', box:'علب', zawya:'زوي', pipe_beam:'مواسير كمر' },
-  welding: { simple:'🔥 بسيط', medium:'🔥🔥 متوسط', heavy:'🔥🔥🔥 كتير' },
-  finishType: { primer:'بطانة', duco:'دوكو', lacquer:'لاكيه', epoxy:'إيبوكس', electrostatic:'الكتروستاتيك' },
-  sheetSubtype: { iron:'حديد', stainless:'استانلس', galvanized:'مجلفن', aluminum:'الومنيوم', copper:'نحاس' },
+  ironType: { sheet:'صاج', boxes:'علب', zawya:'زوايا', pipes:'مواسير', kamar:'كمر', square:'مربع', angle:'أنجل', mix:'مكس' },
+  finishType: { liner:'بطانه', doco:'دوكو', lacquer:'لاكيه', epoxy:'ايبوكس', electrostatic:'الكتروستاتيك' },
   issue: { none:'✅ لا يوجد', missing_material:'خامة ناقصة', worker_absence:'غياب عمال', client_modification:'تعديل العميل' }
 };
 function productLabel(o){
   return LABELS.productType[o.productType] || o.productType || o.productTypeOther || '—';
+}
+
+/* Weight formula: Weight(kg) = Length(mm) × Width(mm) × Thickness(mm) × 0.000008 × عدد القطع */
+function computeWeight(length, width, thickness, pieceCount){
+  length=Number(length)||0; width=Number(width)||0; thickness=Number(thickness)||0; pieceCount=Number(pieceCount)||0;
+  const w = length * width * thickness * 0.000008 * pieceCount;
+  return Math.round(w*100)/100;
+}
+
+/* Get a normalized items[] array for an order, with backward-compat fallback
+   for legacy orders saved before the multi-spec-item structure existed. */
+function getOrderItems(o){
+  if(o.items && o.items.length) return o.items;
+  // legacy fallback — synthesize a single item from old flat fields
+  if(o.ironType || o.weight){
+    return [{
+      ironType: o.ironType || '',
+      length: o.length || 0,
+      width: o.width || 0,
+      thickness: o.thickness || 0,
+      pieceCount: o.pieceCount || 0,
+      weight: o.weight || 0,
+      finish: o.finish || 'no',
+      finishType: o.finishType || ''
+    }];
+  }
+  return [];
+}
+function itemsSummaryText(items){
+  if(!items.length) return '—';
+  return items.map(it=>{
+    const name = LABELS.ironType[it.ironType] || it.ironType || '—';
+    return `${name} (${it.weight||0} كجم × ${it.pieceCount||0} قطعة)`;
+  }).join('، ');
 }
 
 /* ============================================================
@@ -873,6 +933,18 @@ function stagePercent(o){
 function stageLabelText(o){
   if(o.status==='delivered') return 'تم التسليم';
   return STAGES[stageIndex(o)];
+}
+/* compact segmented pipeline: تقطيع ➔ تشكيل ➔ لحام ➔ دهان ➔ تسليم — one segment per stage transition */
+function renderMiniPipeline(o){
+  const idx = stageIndex(o);
+  const done = o.status==='delivered';
+  const segs = STAGES.slice(1).map((label,i)=>{
+    let cls = 'mp-seg';
+    if(done || i < idx) cls += ' filled';
+    else if(i === idx) cls += ' current';
+    return `<span class="${cls}" title="${esc(label)}"></span>`;
+  }).join('');
+  return `<div class="mini-pipeline">${segs}</div>`;
 }
 function renderStageTrack(o, clickable){
   return `<div class="stage-track ${clickable?'':'locked'}">${STAGES.map((s,i)=>{
@@ -902,16 +974,13 @@ function setOrderStage(id, idx){
 ============================================================ */
 const LS_PRICING = 'prismops_pricing_settings';
 const DEFAULT_PRICING = {
-  ironRates:{ sheet:40, box:38, zawya:42, pipe_beam:50 },
-  sheetSubtypeRates:{ iron:38, stainless:130, galvanized:48, aluminum:95, copper:280 },
+  ironRates:{ sheet:40, boxes:38, zawya:42, pipes:48, kamar:46 },
   dailyWage:300,
-  finishRates:{ primer:6, duco:10, lacquer:14, epoxy:18, electrostatic:22 },
+  finishRate:8,
   overheadPercent:10
 };
 let pricing = Object.assign({}, DEFAULT_PRICING, JSON.parse(localStorage.getItem(LS_PRICING)||'{}'));
 pricing.ironRates = Object.assign({}, DEFAULT_PRICING.ironRates, pricing.ironRates||{});
-pricing.sheetSubtypeRates = Object.assign({}, DEFAULT_PRICING.sheetSubtypeRates, pricing.sheetSubtypeRates||{});
-pricing.finishRates = Object.assign({}, DEFAULT_PRICING.finishRates, pricing.finishRates||{});
 function savePricing(){ localStorage.setItem(LS_PRICING, JSON.stringify(pricing)); }
 
 function diffDays(d1,d2){
@@ -921,24 +990,15 @@ function diffDays(d1,d2){
 }
 
 function calcOrderCost(o){
+  const items = getOrderItems(o);
+  let material = 0, finish = 0;
+  items.forEach(it=>{
+    const rate = pricing.ironRates[it.ironType] || 0;
+    material += (it.weight||0) * rate;
+    if(it.finish==='yes') finish += (it.weight||0) * pricing.finishRate;
+  });
   const days = o.status==='delivered' ? diffDays(o.dateReceived,o.dateDelivered) : diffDays(o.dateReceived,o.dateRequired||o.dateReceived);
   const labor = (o.workers||0) * days * pricing.dailyWage;
-
-  let material=0, finish=0;
-  if(Array.isArray(o.items) && o.items.length){
-    o.items.forEach(it=>{
-      const rate = (it.ironType==='sheet') ? (pricing.sheetSubtypeRates[it.sheetSubtype]||0) : (pricing.ironRates[it.ironType]||0);
-      material += (it.weight||0) * rate;
-      if(it.finish==='yes'){
-        finish += (it.weight||0) * (pricing.finishRates[it.finishType]||0);
-      }
-    });
-  } else {
-    // legacy fallback for orders saved before the multi-item spec builder
-    material = (o.weight||0) * (pricing.ironRates[o.ironType]||0);
-    if(o.finish==='yes') finish = (o.weight||0) * 8;
-  }
-
   const subtotal = material+labor+finish;
   const overhead = subtotal * (pricing.overheadPercent||0)/100;
   const total = subtotal + overhead;
@@ -951,41 +1011,26 @@ function money(n){ return Math.round(n).toLocaleString('en-US'); }
 
 function fillPricingForm(){
   document.getElementById('pr_sheet').value = pricing.ironRates.sheet;
-  document.getElementById('pr_box').value = pricing.ironRates.box;
+  document.getElementById('pr_boxes').value = pricing.ironRates.boxes;
   document.getElementById('pr_zawya').value = pricing.ironRates.zawya;
-  document.getElementById('pr_pipe_beam').value = pricing.ironRates.pipe_beam;
+  document.getElementById('pr_pipes').value = pricing.ironRates.pipes;
+  document.getElementById('pr_kamar').value = pricing.ironRates.kamar;
   document.getElementById('pr_wage').value = pricing.dailyWage;
-  document.getElementById('pr_finish_primer').value = pricing.finishRates.primer;
-  document.getElementById('pr_finish_duco').value = pricing.finishRates.duco;
-  document.getElementById('pr_finish_lacquer').value = pricing.finishRates.lacquer;
-  document.getElementById('pr_finish_epoxy').value = pricing.finishRates.epoxy;
-  document.getElementById('pr_finish_electrostatic').value = pricing.finishRates.electrostatic;
-  document.getElementById('pr_sheet_iron').value = pricing.sheetSubtypeRates.iron;
-  document.getElementById('pr_sheet_stainless').value = pricing.sheetSubtypeRates.stainless;
-  document.getElementById('pr_sheet_galvanized').value = pricing.sheetSubtypeRates.galvanized;
-  document.getElementById('pr_sheet_aluminum').value = pricing.sheetSubtypeRates.aluminum;
-  document.getElementById('pr_sheet_copper').value = pricing.sheetSubtypeRates.copper;
+  document.getElementById('pr_finish').value = pricing.finishRate;
   document.getElementById('pr_overhead').value = pricing.overheadPercent;
 }
 document.getElementById('pr_save').addEventListener('click', ()=>{
   pricing.ironRates.sheet = parseFloat(document.getElementById('pr_sheet').value)||0;
-  pricing.ironRates.box = parseFloat(document.getElementById('pr_box').value)||0;
+  pricing.ironRates.boxes = parseFloat(document.getElementById('pr_boxes').value)||0;
   pricing.ironRates.zawya = parseFloat(document.getElementById('pr_zawya').value)||0;
-  pricing.ironRates.pipe_beam = parseFloat(document.getElementById('pr_pipe_beam').value)||0;
+  pricing.ironRates.pipes = parseFloat(document.getElementById('pr_pipes').value)||0;
+  pricing.ironRates.kamar = parseFloat(document.getElementById('pr_kamar').value)||0;
   pricing.dailyWage = parseFloat(document.getElementById('pr_wage').value)||0;
-  pricing.finishRates.primer = parseFloat(document.getElementById('pr_finish_primer').value)||0;
-  pricing.finishRates.duco = parseFloat(document.getElementById('pr_finish_duco').value)||0;
-  pricing.finishRates.lacquer = parseFloat(document.getElementById('pr_finish_lacquer').value)||0;
-  pricing.finishRates.epoxy = parseFloat(document.getElementById('pr_finish_epoxy').value)||0;
-  pricing.finishRates.electrostatic = parseFloat(document.getElementById('pr_finish_electrostatic').value)||0;
-  pricing.sheetSubtypeRates.iron = parseFloat(document.getElementById('pr_sheet_iron').value)||0;
-  pricing.sheetSubtypeRates.stainless = parseFloat(document.getElementById('pr_sheet_stainless').value)||0;
-  pricing.sheetSubtypeRates.galvanized = parseFloat(document.getElementById('pr_sheet_galvanized').value)||0;
-  pricing.sheetSubtypeRates.aluminum = parseFloat(document.getElementById('pr_sheet_aluminum').value)||0;
-  pricing.sheetSubtypeRates.copper = parseFloat(document.getElementById('pr_sheet_copper').value)||0;
+  pricing.finishRate = parseFloat(document.getElementById('pr_finish').value)||0;
   pricing.overheadPercent = parseFloat(document.getElementById('pr_overhead').value)||0;
   savePricing();
   renderCosts();
+  renderCostPreview();
   toast('اتحفظت إعدادات التسعير ✓');
 });
 
@@ -1058,6 +1103,11 @@ document.getElementById('exportCostsBtn').addEventListener('click', ()=>{
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function fmtDate(d){ return d ? d : '—'; }
 function isLate(o){ return o.status==='pending' && o.dateRequired && o.dateRequired < todayStr(); }
+function isUrgent(o){
+  if(o.status!=='pending' || !o.dateRequired) return false;
+  const days = Math.round((new Date(o.dateRequired)-new Date(todayStr()))/86400000);
+  return days>=0 && days<=2;
+}
 function orderStatusInfo(o){
   if(o.status==='delivered') return {cls:'ok', text:'تم التسليم'};
   if(isLate(o)) return {cls:'bad', text:'متأخر'};
@@ -1069,6 +1119,34 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2200);
 }
 function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* week-over-week trend indicators on KPI cards */
+function renderTrends(){
+  const weekMs = 7*86400000;
+  const now = Date.now();
+  const thisStart = now - weekMs, lastStart = now - weekMs*2;
+  function ts(o){ return new Date(o.createdAt || o.dateReceived || now).getTime(); }
+  const thisWeek = orders.filter(o=>{ const t=ts(o); return t>=thisStart && t<=now; });
+  const lastWeek = orders.filter(o=>{ const t=ts(o); return t>=lastStart && t<thisStart; });
+
+  function setTrend(id, curr, prev, badWhenUp){
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(prev===0 && curr===0){ el.className='trend flat'; el.textContent='— زي الأسبوع اللي فات'; return; }
+    const diff = prev===0 ? 100 : Math.round(((curr-prev)/prev)*100);
+    if(diff===0){ el.className='trend flat'; el.textContent='— زي الأسبوع اللي فات'; return; }
+    const rising = diff>0;
+    const cls = badWhenUp ? (rising?'down':'up') : (rising?'up':'down');
+    el.className = 'trend '+cls;
+    el.textContent = (rising?'↑ ':'↓ ')+Math.abs(diff)+'% عن الأسبوع اللي فات';
+  }
+
+  setTrend('trendTotal', thisWeek.length, lastWeek.length, false);
+  setTrend('trendActive', thisWeek.filter(o=>o.status==='pending').length, lastWeek.filter(o=>o.status==='pending').length, false);
+  setTrend('trendLate', thisWeek.filter(isLate).length, lastWeek.filter(isLate).length, true);
+  setTrend('trendDelivered', thisWeek.filter(o=>o.status==='delivered').length, lastWeek.filter(o=>o.status==='delivered').length, false);
+  setTrend('trendClients', new Set(thisWeek.map(o=>o.clientName)).size, new Set(lastWeek.map(o=>o.clientName)).size, false);
+}
 
 function animateNumber(el, target){
   if(!el) return;
@@ -1085,27 +1163,41 @@ function animateNumber(el, target){
   }
   requestAnimationFrame(step);
 }
-function fillProgressBars(){
-  requestAnimationFrame(()=>{
-    document.querySelectorAll('.stage-mini-bar span[data-target]').forEach(s=>{
-      s.style.width = s.dataset.target;
-    });
-  });
-}
 
 /* ============================================================
    NAV
 ============================================================ */
+const SKELETON_TARGETS = {
+  dashboard: ['recentList','alertList'],
+  orders: ['ordersListWrap'],
+  clients: ['clientGrid'],
+  costs: []
+};
+function skeletonRows(n){
+  let h='';
+  for(let i=0;i<n;i++) h += '<div class="skel-row"><span class="skel-block" style="width:60%"></span><span class="skel-block" style="width:20%"></span></div>';
+  return h;
+}
+function showSkeleton(view){
+  (SKELETON_TARGETS[view]||[]).forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = skeletonRows(3);
+  });
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('view-'+btn.dataset.view).classList.add('active');
-    if(btn.dataset.view==='dashboard') renderDashboard();
-    if(btn.dataset.view==='orders') renderOrdersList();
-    if(btn.dataset.view==='clients'){ showClientsGrid(); renderClientsGrid(); }
-    if(btn.dataset.view==='costs') renderCosts();
+    showSkeleton(btn.dataset.view);
+    setTimeout(()=>{
+      if(btn.dataset.view==='dashboard') renderDashboard();
+      if(btn.dataset.view==='orders') renderOrdersList();
+      if(btn.dataset.view==='clients'){ showClientsGrid(); renderClientsGrid(); }
+      if(btn.dataset.view==='costs') renderCosts();
+    }, 180);
   });
 });
 
@@ -1127,105 +1219,150 @@ function wireChipGroup(id){
     });
   });
 }
-['spec_finishTypeChips','spec_sheetSubtypeChips'].forEach(wireChipGroup);
+['ironTypeChips','finishChips','finishTypeChips'].forEach(wireChipGroup);
 function getChipVal(id){ const sel=document.querySelector('#'+id+' .chip.sel'); return sel?sel.dataset.val:null; }
 
-/* sheet sub-type reveal when صاج is chosen */
-document.querySelectorAll('#spec_ironTypeChips .chip').forEach(chip=>{
-  chip.addEventListener('click', ()=>{
-    document.querySelectorAll('#spec_ironTypeChips .chip').forEach(c=>c.classList.remove('sel'));
-    chip.classList.add('sel');
-    document.getElementById('spec_sheetSubtypeField').style.display = chip.dataset.val==='sheet' ? 'block' : 'none';
-  });
+/* show/hide finish-type sub-choices, and live weight readout */
+document.getElementById('finishChips').addEventListener('click', ()=>{
+  const val = getChipVal('finishChips');
+  document.getElementById('finishTypeField').style.display = (val==='yes') ? 'block' : 'none';
+  if(val!=='yes'){
+    document.querySelectorAll('#finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  }
+  renderCostPreview();
+});
+document.getElementById('ironTypeChips').addEventListener('click', renderCostPreview);
+document.getElementById('finishTypeChips').addEventListener('click', renderCostPreview);
+
+function updateWeightReadout(){
+  const w = computeWeight(
+    document.getElementById('f_length').value,
+    document.getElementById('f_width').value,
+    document.getElementById('f_thickness').value,
+    document.getElementById('f_pieceCount').value
+  );
+  document.getElementById('computedWeightReadout').textContent = w + ' كجم';
+  renderCostPreview();
+}
+['f_length','f_width','f_thickness','f_pieceCount'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateWeightReadout);
 });
 
-/* finish yes/no reveal for finish-type chips */
-document.querySelectorAll('#spec_finishChips .chip').forEach(chip=>{
-  chip.addEventListener('click', ()=>{
-    document.querySelectorAll('#spec_finishChips .chip').forEach(c=>c.classList.remove('sel'));
-    chip.classList.add('sel');
-    document.getElementById('spec_finishTypeField').style.display = chip.dataset.val==='yes' ? 'block' : 'none';
-  });
-});
+/* live cost preview — updates as the person picks material/dimensions/finish */
+function renderCostPreview(){
+  const el = document.getElementById('costPreviewBox');
+  if(!el) return;
+  const ironType = getChipVal('ironTypeChips');
+  const length = parseFloat(document.getElementById('f_length').value)||0;
+  const width = parseFloat(document.getElementById('f_width').value)||0;
+  const thickness = parseFloat(document.getElementById('f_thickness').value)||0;
+  const pieceCount = parseInt(document.getElementById('f_pieceCount').value)||0;
+  const finish = getChipVal('finishChips');
+  const w = computeWeight(length, width, thickness, pieceCount);
+  const rate = ironType ? (pricing.ironRates[ironType]||0) : 0;
+  let pieceCost = w * rate;
+  if(finish==='yes') pieceCost += w * pricing.finishRate;
+
+  const existingTotal = currentOrderItems.reduce((s,it)=>{
+    const r = pricing.ironRates[it.ironType]||0;
+    let c = (it.weight||0)*r;
+    if(it.finish==='yes') c += (it.weight||0)*pricing.finishRate;
+    return s+c;
+  },0);
+
+  document.getElementById('cp_piece').textContent = money(pieceCost)+' ج.م';
+  document.getElementById('cp_total').textContent = money(existingTotal+pieceCost)+' ج.م';
+}
+
+/* +/- stepper controls for numeric fields (touch-friendly) */
+function attachStepper(id, step, min){
+  const input = document.getElementById(id);
+  if(!input || input.closest('.stepper-field')) return;
+  min = (min===undefined) ? 0 : min;
+  const wrap = document.createElement('div');
+  wrap.className = 'stepper-field';
+  const minus = document.createElement('button');
+  minus.type='button'; minus.className='stepper-btn'; minus.setAttribute('aria-label','تقليل'); minus.textContent='−';
+  const plus = document.createElement('button');
+  plus.type='button'; plus.className='stepper-btn'; plus.setAttribute('aria-label','زيادة'); plus.textContent='+';
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(minus);
+  wrap.appendChild(input);
+  wrap.appendChild(plus);
+  function bump(delta){
+    let v = parseFloat(input.value)||0;
+    v = Math.max(min, Math.round((v+delta)*10)/10);
+    input.value = v;
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+  minus.addEventListener('click', ()=>bump(-step));
+  plus.addEventListener('click', ()=>bump(step));
+}
+['f_length','f_width','f_thickness'].forEach(id=>attachStepper(id, 1, 0));
+attachStepper('f_pieceCount', 1, 0);
+attachStepper('f_workers', 1, 0);
 
 /* ============================================================
-   SPEC ITEM BUILDER — multiple pieces per job
+   MULTI-SPEC ITEMS FOR ONE JOB
 ============================================================ */
-let currentSpecItems = [];
-
-function computeSpecWeight(){
-  const L = parseFloat(document.getElementById('spec_length').value) || 0;
-  const W = parseFloat(document.getElementById('spec_width').value) || 0;
-  const T = parseFloat(document.getElementById('spec_thickness').value) || 0;
-  const Q = parseFloat(document.getElementById('spec_pieceCount').value) || 0;
-  const weight = T * L * W * 0.000008 * Q;
-  document.getElementById('spec_weight').value = weight ? weight.toFixed(2) : '0';
-  return weight;
-}
-['spec_length','spec_width','spec_thickness','spec_pieceCount'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', computeSpecWeight);
-});
+let currentOrderItems = [];
 
 function resetSpecFields(){
-  document.getElementById('spec_length').value='';
-  document.getElementById('spec_width').value='';
-  document.getElementById('spec_thickness').value='';
-  document.getElementById('spec_pieceCount').value='';
-  document.getElementById('spec_weight').value='0';
-  document.querySelectorAll('#spec_ironTypeChips .chip, #spec_finishTypeChips .chip, #spec_sheetSubtypeChips .chip').forEach(c=>c.classList.remove('sel'));
-  document.getElementById('spec_sheetSubtypeField').style.display='none';
-  document.querySelectorAll('#spec_finishChips .chip').forEach(c=>c.classList.remove('sel'));
-  document.querySelector('#spec_finishChips .chip[data-val="no"]').classList.add('sel');
-  document.getElementById('spec_finishTypeField').style.display='none';
+  document.querySelectorAll('#ironTypeChips .chip, #finishChips .chip, #finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('finishTypeField').style.display='none';
+  document.getElementById('f_length').value='';
+  document.getElementById('f_width').value='';
+  document.getElementById('f_thickness').value='';
+  document.getElementById('f_pieceCount').value='';
+  updateWeightReadout();
+  renderCostPreview();
 }
+
+document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
+  const ironType = getChipVal('ironTypeChips');
+  if(!ironType){ toast('اختار نوع الخام الأول'); return; }
+  const length = parseFloat(document.getElementById('f_length').value)||0;
+  const width = parseFloat(document.getElementById('f_width').value)||0;
+  const thickness = parseFloat(document.getElementById('f_thickness').value)||0;
+  const pieceCount = parseInt(document.getElementById('f_pieceCount').value)||0;
+  if(!pieceCount){ toast('اكتب عدد القطع'); return; }
+  const finish = getChipVal('finishChips') || 'no';
+  const finishType = finish==='yes' ? (getChipVal('finishTypeChips') || '') : '';
+  if(finish==='yes' && !finishType){ toast('اختار نوع التشطيب'); return; }
+
+  const weight = computeWeight(length, width, thickness, pieceCount);
+  currentOrderItems.push({ ironType, length, width, thickness, pieceCount, weight, finish, finishType });
+  renderSpecItemsList();
+  resetSpecFields();
+  toast('اتضافت المواصفة دي للشغلانة ✓');
+});
 
 function renderSpecItemsList(){
   const wrap = document.getElementById('specItemsList');
-  if(currentSpecItems.length===0){
-    wrap.innerHTML = '<p class="spec-items-empty">لسه مفيش قطع مضافة للشغلانة دي.</p>';
+  const empty = document.getElementById('specItemsEmpty');
+  if(currentOrderItems.length===0){
+    wrap.innerHTML='';
+    empty.style.display='block';
     return;
   }
-  wrap.innerHTML = currentSpecItems.map((it,idx)=>{
-    const ironLabel = LABELS.ironType[it.ironType]||it.ironType;
-    const subtypeLabel = (it.ironType==='sheet' && it.sheetSubtype) ? (' ('+(LABELS.sheetSubtype[it.sheetSubtype]||it.sheetSubtype)+')') : '';
-    const finishLabel = it.finish==='yes' ? (' — 🎨 '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
+  empty.style.display='none';
+  wrap.innerHTML = currentOrderItems.map((it,idx)=>{
+    const name = LABELS.ironType[it.ironType]||it.ironType;
+    const finishTxt = it.finish==='yes' ? ('تشطيب: '+(LABELS.finishType[it.finishType]||it.finishType)) : 'من غير تشطيب';
     return `<div class="spec-item-row">
-      <div>
-        <div class="si-main">${ironLabel}${subtypeLabel} — ${it.weight.toFixed(2)} كجم × ${it.pieceCount} قطعة${finishLabel}</div>
-        <div class="si-meta">${it.length}×${it.width}×${it.thickness} مم</div>
+      <div class="si-main">
+        <b>${name}</b> — ${it.weight} كجم × ${it.pieceCount} قطعة
+        <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; ${finishTxt}</div>
       </div>
-      <button type="button" class="si-remove" onclick="removeSpecItem(${idx})">✕</button>
+      <button type="button" class="spec-item-remove" onclick="removeSpecItem(${idx})">✕</button>
     </div>`;
   }).join('');
 }
 function removeSpecItem(idx){
-  currentSpecItems.splice(idx,1);
+  currentOrderItems.splice(idx,1);
   renderSpecItemsList();
+  renderCostPreview();
 }
-
-document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
-  const ironType = getChipVal('spec_ironTypeChips');
-  if(!ironType){ toast('اختار نوع الخام'); return; }
-  let sheetSubtype = null;
-  if(ironType==='sheet'){
-    sheetSubtype = getChipVal('spec_sheetSubtypeChips');
-    if(!sheetSubtype){ toast('اختار نوع الصاج'); return; }
-  }
-  const length = parseFloat(document.getElementById('spec_length').value) || 0;
-  const width = parseFloat(document.getElementById('spec_width').value) || 0;
-  const thickness = parseFloat(document.getElementById('spec_thickness').value) || 0;
-  const pieceCount = parseInt(document.getElementById('spec_pieceCount').value) || 0;
-  if(!length || !width || !thickness || !pieceCount){ toast('اكمل كل مقاسات القطعة وعدد القطع'); return; }
-  const weight = computeSpecWeight();
-  const finish = getChipVal('spec_finishChips') || 'no';
-  const finishType = finish==='yes' ? getChipVal('spec_finishTypeChips') : null;
-  if(finish==='yes' && !finishType){ toast('اختار نوع التشطيب'); return; }
-
-  currentSpecItems.push({ ironType, sheetSubtype, length, width, thickness, pieceCount, weight, finish, finishType });
-  renderSpecItemsList();
-  resetSpecFields();
-  toast('اتضافت القطعة ✓');
-});
 
 /* ============================================================
    NEW ORDER FORM
@@ -1236,10 +1373,12 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
   if(!clientName){ toast('لازم تكتب اسم العميل'); return; }
   const jobName = document.getElementById('f_orderDesc').value.trim();
   if(!jobName){ toast('لازم تكتب اسم الشغلانة'); return; }
-  if(currentSpecItems.length===0){ toast('ضيف مواصفة واحدة على الأقل قبل الحفظ'); return; }
+  const productType = document.getElementById('f_productType').value.trim();
+  if(!productType){ toast('اكتب نوع المنتج'); return; }
+  if(currentOrderItems.length===0){ toast('ضيف مواصفة واحدة على الأقل واضغط "سيف" قبل ما تحفظ الأوردر'); return; }
 
-  const totalWeight = currentSpecItems.reduce((s,it)=>s+it.weight,0);
-  const totalPieces = currentSpecItems.reduce((s,it)=>s+it.pieceCount,0);
+  const totalWeight = currentOrderItems.reduce((s,it)=>s+(it.weight||0),0);
+  const totalPieces = currentOrderItems.reduce((s,it)=>s+(it.pieceCount||0),0);
 
   const order = {
     id: Date.now().toString(36).toUpperCase(),
@@ -1247,10 +1386,10 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
     clientPhone: document.getElementById('f_clientPhone').value.trim(),
     clientEngineer: document.getElementById('f_clientEngineer').value.trim(),
     executingEngineer: document.getElementById('f_executingEngineer').value.trim(),
-    productType: jobName,
+    productType,
     productTypeOther: '',
     orderDesc: jobName,
-    items: currentSpecItems.slice(),
+    items: currentOrderItems.slice(),
     weight: Math.round(totalWeight*100)/100,
     pieceCount: totalPieces,
     workers: parseInt(document.getElementById('f_workers').value) || 0,
@@ -1272,15 +1411,12 @@ document.getElementById('orderForm').addEventListener('submit', e=>{
   saveClientsMeta();
 
   document.getElementById('orderForm').reset();
-  document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
-  currentSpecItems = [];
+  currentOrderItems = [];
   renderSpecItemsList();
   resetSpecFields();
   toast('تم حفظ الأوردر ✓');
   renderDashboard();
 });
-renderSpecItemsList();
-resetSpecFields();
 
 /* ============================================================
    DASHBOARD
@@ -1291,6 +1427,7 @@ function renderDashboard(){
   animateNumber(document.getElementById('kpiLate'), orders.filter(isLate).length);
   animateNumber(document.getElementById('kpiDelivered'), orders.filter(o=>o.status==='delivered').length);
   animateNumber(document.getElementById('kpiClients'), new Set(orders.map(o=>o.clientName)).size);
+  renderTrends();
 
   const recentWrap = document.getElementById('recentList');
   if(orders.length===0){
@@ -1338,6 +1475,7 @@ function renderOrdersList(){
   let list = orders.filter(o=>{
     if(currentOrderFilter==='pending' && o.status!=='pending') return false;
     if(currentOrderFilter==='late' && !isLate(o)) return false;
+    if(currentOrderFilter==='urgent' && !isUrgent(o)) return false;
     if(currentOrderFilter==='delivered' && o.status!=='delivered') return false;
     if(q){
       const label = productLabel(o);
@@ -1365,13 +1503,12 @@ function renderOrdersList(){
         </div>
         <div class="stage-mini">
           <span class="stage-mini-label">${stageLabelText(o)}</span>
-          <div class="stage-mini-bar"><span data-target="${stagePercent(o)}%"></span></div>
+          ${renderMiniPipeline(o)}
         </div>
       </div>
       <div class="oc-right"><span class="stamp ${st.cls}">${st.text}</span></div>
     </div>`;
   }).join('');
-  fillProgressBars();
 }
 
 /* ============================================================
@@ -1382,7 +1519,20 @@ function openOrderModal(id){
   activeOrderId = id;
   const o = orders.find(x=>x.id===id);
   if(!o) return;
+  const label = productLabel(o);
   const st = orderStatusInfo(o);
+  const items = getOrderItems(o);
+
+  const itemsRows = items.map(it=>{
+    const name = LABELS.ironType[it.ironType]||it.ironType||'—';
+    const finishTxt = it.finish==='yes' ? (LABELS.finishType[it.finishType]||it.finishType||'—') : 'لأ';
+    return `<div class="spec-item-row">
+      <div class="si-main">
+        <b>${name}</b> — ${it.weight||0} كجم × ${it.pieceCount||0} قطعة
+        <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; تشطيب: ${finishTxt}</div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="empty-note">مفيش مواصفات مسجلة.</p>';
 
   document.getElementById('om_title').textContent = '#'+o.id+' — '+esc(o.clientName);
   document.getElementById('om_body').innerHTML = `
@@ -1392,6 +1542,7 @@ function openOrderModal(id){
       ${renderStageTrack(o, o.status!=='delivered')}
     </div>
     <div class="detail-grid">
+      <div class="d"><span class="k">نوع المنتج</span><span class="v">${label}</span></div>
       <div class="d"><span class="k">اسم الشغلانة</span><span class="v">${esc(o.orderDesc)||'—'}</span></div>
       <div class="d"><span class="k">مهندس الشغلانة (العميل)</span><span class="v">${esc(o.clientEngineer)||'—'}</span></div>
       <div class="d"><span class="k">المهندس المنفذ</span><span class="v">${esc(o.executingEngineer)||'—'}</span></div>
@@ -1404,28 +1555,15 @@ function openOrderModal(id){
       <div class="d"><span class="k">تاريخ التسليم الفعلي</span><span class="v mono">${fmtDate(o.dateDelivered)}</span></div>
       <div class="d"><span class="k">مشاكل حصلت</span><span class="v">${LABELS.issue[o.issue]||'—'}</span></div>` : ''}
     </div>
-    ${Array.isArray(o.items) && o.items.length ? `
-    <div style="margin-bottom:16px;">
-      <div class="section-label">📐 قطع الشغلانة</div>
-      ${o.items.map(it=>{
-        const ironLabel = LABELS.ironType[it.ironType]||it.ironType;
-        const subtypeLabel = (it.ironType==='sheet' && it.sheetSubtype) ? (' ('+(LABELS.sheetSubtype[it.sheetSubtype]||it.sheetSubtype)+')') : '';
-        const finishLabel = it.finish==='yes' ? (' — 🎨 '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
-        return `<div class="spec-item-row">
-          <div>
-            <div class="si-main">${ironLabel}${subtypeLabel} — ${(it.weight||0).toFixed(2)} كجم × ${it.pieceCount} قطعة${finishLabel}</div>
-            <div class="si-meta">${it.length}×${it.width}×${it.thickness} مم</div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>` : ''}
-    ${o.deliveryNotes ? `<div class="field"><label>ملاحظات التسليم</label><div style="font-size:12.5px;color:var(--ink-dim)">${esc(o.deliveryNotes)}</div></div>` : ''}
+    <div class="section-label">المواصفات</div>
+    ${itemsRows}
+    ${o.deliveryNotes ? `<div class="field" style="margin-top:12px;"><label>ملاحظات التسليم</label><div style="font-size:12.5px;color:var(--ink-dim)">${esc(o.deliveryNotes)}</div></div>` : ''}
   `;
 
   const c = calcOrderCost(o);
   const profitCls = c.profit===null ? '' : (c.profit>=0 ? 'profit-pos':'profit-neg');
   document.getElementById('om_body').innerHTML += `
-    <div class="cost-breakdown-box spec-card" style="margin-top:4px;">
+    <div class="cost-breakdown-box spec-card" style="margin-top:14px;">
       <div class="section-label">💰 تكلفة الأوردر</div>
       <div class="cost-line"><span>خامة (${o.weight||0} كجم)</span><span class="v">${money(c.material)}</span></div>
       <div class="cost-line"><span>عمالة (${o.workers||0} عامل × ${c.days} يوم)</span><span class="v">${money(c.labor)}</span></div>
@@ -1584,7 +1722,7 @@ function openClientDetail(name){
       <td>${label}${o.orderDesc?' — '+esc(o.orderDesc):''}<br><span class="mono" style="color:var(--ink-faint);font-size:10px;">#${o.id}</span></td>
       <td class="mono">${o.weight||0} كجم</td>
       <td style="font-size:11.5px;">${esc(o.executingEngineer)||'—'}</td>
-      <td style="color:var(--cyan);font-size:11.5px;">${stageLabelText(o)}</td>
+      <td><div style="min-width:100px;"><span style="color:var(--cyan);font-size:11px;">${stageLabelText(o)}</span>${renderMiniPipeline(o)}</div></td>
       <td class="mono">${fmtDate(o.dateRequired)}</td>
       <td><span class="stamp ${st.cls}" style="font-size:9.5px;padding:2px 7px;">${st.text}</span></td>
     </tr>`;
@@ -1635,22 +1773,14 @@ function downloadCSV(filename, rows){
 }
 
 document.getElementById('exportOrdersBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','اسم الشغلانة','تفاصيل القطع','إجمالي الوزن كجم','إجمالي عدد القطع','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
-  const rows = [header, ...orders.map(o=>{
-    const itemsSummary = (Array.isArray(o.items) && o.items.length)
-      ? o.items.map(it=>{
-          const ironLabel = LABELS.ironType[it.ironType]||it.ironType;
-          const subtypeLabel = (it.ironType==='sheet' && it.sheetSubtype) ? (' ('+(LABELS.sheetSubtype[it.sheetSubtype]||it.sheetSubtype)+')') : '';
-          const finishLabel = it.finish==='yes' ? (' - '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
-          return `${ironLabel}${subtypeLabel} ${it.length}x${it.width}x${it.thickness}mm ${it.weight.toFixed(2)}kg x${it.pieceCount}${finishLabel}`;
-        }).join(' | ')
-      : '';
-    return [
-      o.id, o.clientName, o.clientPhone, o.clientEngineer||'', o.executingEngineer||'',
-      o.orderDesc, itemsSummary, o.weight, o.pieceCount, o.workers,
-      o.dateReceived, o.dateRequired, stageLabelText(o), o.status, o.dateDelivered, LABELS.issue[o.issue]||'', o.deliveryNotes
-    ];
-  })];
+  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','نوع المنتج','اسم الشغلانة','المواصفات (خامة/وزن/قطع/تشطيب)','إجمالي الوزن كجم','إجمالي عدد القطع','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
+  const rows = [header, ...orders.map(o=>[
+    o.id, o.clientName, o.clientPhone, o.clientEngineer||'', o.executingEngineer||'',
+    productLabel(o),
+    o.orderDesc, itemsSummaryText(getOrderItems(o)), o.weight, o.pieceCount,
+    o.workers,
+    o.dateReceived, o.dateRequired, stageLabelText(o), o.status, o.dateDelivered, LABELS.issue[o.issue]||'', o.deliveryNotes
+  ])];
   downloadCSV('prismops_orders.csv', rows);
   toast('تم تحميل ملف الأوردرات');
 });
@@ -1683,6 +1813,8 @@ renderDashboard();
 renderOrdersList();
 renderClientsGrid();
 renderCosts();
+renderSpecItemsList();
+renderCostPreview();
 </script>
 </body>
 </html>
