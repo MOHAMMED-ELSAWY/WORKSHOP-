@@ -534,7 +534,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
     </div>
   </section>
 
-  <!-- ============ NEW ORDER ============ -->
+ <!-- ============ NEW ORDER ============ -->
   <section class="view" id="view-new-order">
     <form id="orderForm" class="form-wrap">
 
@@ -566,75 +566,76 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         </div>
       </div>
 
-      
-
-      <div class="form-section spec-card full">
-        <div class="section-label">المواصفات (تقدر تضيف كذا مواصفة في نفس الشغلانة)</div>
+      <div class="form-section spec-card full" id="specBuilderCard">
+        <div class="section-label">المواصفات</div>
 
         <div class="field">
           <label>نوع الخام</label>
-          <div class="chip-group" id="ironTypeChips">
+          <div class="chip-group" id="spec_ironTypeChips">
             <div class="chip" data-val="sheet">صاج</div>
-            <div class="chip" data-val="boxes">علب</div>
-            <div class="chip" data-val="zawya">زوايا</div>
-            <div class="chip" data-val="pipes"> مواسير كمر</div>
+            <div class="chip" data-val="box">علب</div>
+            <div class="chip" data-val="zawya">زوي</div>
+            <div class="chip" data-val="pipe_beam">مواسير كمر</div>
           </div>
         </div>
-       <div class="row2">
+        <div class="field" id="spec_sheetSubtypeField" style="display:none">
+          <label>نوع الصاج</label>
+          <div class="chip-group" id="spec_sheetSubtypeChips">
+            <div class="chip" data-val="iron">حديد</div>
+            <div class="chip" data-val="stainless">استانلس</div>
+            <div class="chip" data-val="galvanized">مجلفن</div>
+            <div class="chip" data-val="aluminum">الومنيوم</div>
+            <div class="chip" data-val="copper">نحاس</div>
+          </div>
+        </div>
+
+        <div class="row2" style="grid-template-columns:repeat(3,1fr);">
           <div class="field">
             <label>الطول (مم)</label>
-            <input type="number" id="f_length" min="0" step="0.1">
+            <input type="number" id="spec_length" min="0" step="0.1">
           </div>
           <div class="field">
             <label>العرض (مم)</label>
-            <input type="number" id="f_width" min="0" step="0.1">
+            <input type="number" id="spec_width" min="0" step="0.1">
+          </div>
+          <div class="field">
+            <label>السُمك (مم)</label>
+            <input type="number" id="spec_thickness" min="0" step="0.1">
           </div>
         </div>
+
         <div class="row2">
           <div class="field">
-            <label>السمك (مم)</label>
-            <input type="number" id="f_thickness" min="0" step="0.1">
+            <label>عدد القطع</label>
+            <input type="number" id="spec_pieceCount" min="0" step="1">
           </div>
           <div class="field">
-            <label>عدد القطع</label>
-            <input type="number" id="f_pieceCount" min="0" step="1">
+            <label>الوزن التقريبي (كيلو) — بيتحسب أوتوماتيك</label>
+            <input type="text" id="spec_weight" class="mono" readonly value="0" style="color:var(--accent); font-weight:700;">
           </div>
-        </div>
-        <div class="field">
-          <label>⚖️ الوزن التقريبي المحسوب (كيلو)</label>
-          <div class="weight-readout" id="computedWeightReadout">0 كجم</div>
         </div>
 
         <div class="field">
           <label>فيه دهان / تشطيب؟</label>
-          <div class="chip-group" id="finishChips">
-            <div class="chip" data-val="no">لأ</div>
-            <div class="chip" data-val="yes">نعم</div>
+          <div class="chip-group" id="spec_finishChips">
+            <div class="chip sel" data-val="no">لأ</div>
+            <div class="chip" data-val="yes">أيوه</div>
           </div>
         </div>
-        <div class="field" id="finishTypeField" style="display:none;">
+        <div class="field" id="spec_finishTypeField" style="display:none">
           <label>نوع التشطيب</label>
-          <div class="chip-group" id="finishTypeChips">
-            <div class="chip" data-val="liner">بطانه</div>
-            <div class="chip" data-val="doco">دوكو</div>
+          <div class="chip-group" id="spec_finishTypeChips">
+            <div class="chip" data-val="primer">بطانة</div>
+            <div class="chip" data-val="duco">دوكو</div>
             <div class="chip" data-val="lacquer">لاكيه</div>
-            <div class="chip" data-val="epoxy">ايبوكس</div>
+            <div class="chip" data-val="epoxy">إيبوكس</div>
             <div class="chip" data-val="electrostatic">الكتروستاتيك</div>
           </div>
         </div>
 
-        <div class="cost-preview-box" id="costPreviewBox">
-          <div class="cost-preview-row"><span>💰 تكلفة القطعة دي تقريبًا</span><span class="v" id="cp_piece">0 ج.م</span></div>
-          <div class="cost-preview-row total"><span>إجمالي تكلفة الشغلانة لحد دلوقتي</span><span class="v" id="cp_total">0 ج.م</span></div>
-        </div>
+        <button type="button" class="btn small" id="addSpecItemBtn">💾 حفظ وإضافة القطعة دي</button>
 
-        <div class="form-actions" style="margin-bottom:14px;">
-          <button type="button" class="btn small" id="addSpecItemBtn">➕ سيف المواصفة دي وضيف واحدة تانية</button>
-        </div>
-
-        <div class="section-label">المواصفات المضافة للشغلانة دي</div>
-        <p id="specItemsEmpty">لسه مفيش مواصفات متضافة. اضغط "سيف" فوق عشان تضيفها هنا.</p>
-        <div id="specItemsList"></div>
+        <div id="specItemsList" style="margin-top:16px;"></div>
       </div>
 
       <div class="form-section spec-card full">
@@ -663,6 +664,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       </div>
     </form>
   </section>
+
 
   <!-- ============ ORDERS LIST ============ -->
   <section class="view" id="view-orders">
@@ -735,7 +737,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
     </div>
   </section>
 
-  <!-- ============ COSTS (NEW) ============ -->
+<!-- ============ COSTS (NEW) ============ -->
   <section class="view" id="view-costs">
 
     <div class="panel-block spec-card" style="margin-bottom:18px;">
@@ -743,15 +745,27 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
       <div class="section-label" style="margin-top:6px;">سعر الخام للكيلو (جنيه)</div>
       <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
         <div class="field"><label>صاج</label><input type="number" min="0" step="0.5" id="pr_sheet"></div>
-        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_boxes"></div>
-        <div class="field"><label>زوايا</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
-        <div class="field"><label>مواسير</label><input type="number" min="0" step="0.5" id="pr_pipes"></div>
-        <div class="field"><label>كمر</label><input type="number" min="0" step="0.5" id="pr_kamar"></div>
+        <div class="field"><label>علب</label><input type="number" min="0" step="0.5" id="pr_box"></div>
+        <div class="field"><label>زوي</label><input type="number" min="0" step="0.5" id="pr_zawya"></div>
+        <div class="field"><label>مواسير كمر</label><input type="number" min="0" step="0.5" id="pr_pipe_beam"></div>
         <div class="field"><label>أجر يوم العامل</label><input type="number" min="0" step="5" id="pr_wage"></div>
-      </div>
-      <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
-        <div class="field"><label>تكلفة الدهان/التشطيب للكيلو</label><input type="number" min="0" step="0.5" id="pr_finish"></div>
         <div class="field"><label>نسبة مصاريف تشغيل إضافية %</label><input type="number" min="0" step="1" id="pr_overhead"></div>
+      </div>
+      <div class="section-label">تكلفة التشطيب للكيلو حسب النوع (جنيه)</div>
+      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="field"><label>بطانة</label><input type="number" min="0" step="0.5" id="pr_finish_primer"></div>
+        <div class="field"><label>دوكو</label><input type="number" min="0" step="0.5" id="pr_finish_duco"></div>
+        <div class="field"><label>لاكيه</label><input type="number" min="0" step="0.5" id="pr_finish_lacquer"></div>
+        <div class="field"><label>إيبوكس</label><input type="number" min="0" step="0.5" id="pr_finish_epoxy"></div>
+        <div class="field"><label>الكتروستاتيك</label><input type="number" min="0" step="0.5" id="pr_finish_electrostatic"></div>
+      </div>
+      <div class="section-label">سعر الصاج للكيلو حسب النوع (جنيه)</div>
+      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div class="field"><label>حديد</label><input type="number" min="0" step="0.5" id="pr_sheet_iron"></div>
+        <div class="field"><label>استانلس</label><input type="number" min="0" step="0.5" id="pr_sheet_stainless"></div>
+        <div class="field"><label>مجلفن</label><input type="number" min="0" step="0.5" id="pr_sheet_galvanized"></div>
+        <div class="field"><label>الومنيوم</label><input type="number" min="0" step="0.5" id="pr_sheet_aluminum"></div>
+        <div class="field"><label>نحاس</label><input type="number" min="0" step="0.5" id="pr_sheet_copper"></div>
       </div>
       <button class="btn small" id="pr_save">💾 حفظ إعدادات التسعير</button>
     </div>
