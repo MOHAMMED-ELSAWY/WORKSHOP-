@@ -566,7 +566,13 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
         </div>
       </div>
 
-      
+      <div class="form-section spec-card">
+        <div class="section-label">بيانات الأوردر</div>
+        <div class="field">
+          <label>نوع المنتج <span class="req">*</span></label>
+          <input type="text" id="f_productType" required placeholder="اكتب أي حاجة عن المنتج: النوع، المقاس، الشكل...">
+        </div>
+      </div>
 
       <div class="form-section spec-card full">
         <div class="section-label">المواصفات (تقدر تضيف كذا مواصفة في نفس الشغلانة)</div>
@@ -577,10 +583,21 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
             <div class="chip" data-val="sheet">صاج</div>
             <div class="chip" data-val="boxes">علب</div>
             <div class="chip" data-val="zawya">زوايا</div>
-            <div class="chip" data-val="pipes"> مواسير كمر</div>
+            <div class="chip" data-val="pipes">مواسير</div>
+            <div class="chip" data-val="kamar">كمر</div>
           </div>
         </div>
-       <div class="row2">
+
+        <div class="field" id="sheetTypeField" style="display:none;">
+          <label>نوع الصاج</label>
+          <div class="chip-group" id="sheetTypeChips"></div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <input type="text" id="f_customSheetType" placeholder="مش لاقي نوع الصاج؟ اكتبه هنا وضيفه">
+            <button type="button" class="btn small ghost" id="addCustomSheetTypeBtn" style="flex:none;">➕ ضيف</button>
+          </div>
+        </div>
+
+        <div class="row2">
           <div class="field">
             <label>الطول (مم)</label>
             <input type="number" id="f_length" min="0" step="0.1">
@@ -609,7 +626,7 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
           <label>فيه دهان / تشطيب؟</label>
           <div class="chip-group" id="finishChips">
             <div class="chip" data-val="no">لأ</div>
-            <div class="chip" data-val="yes">نعم</div>
+            <div class="chip" data-val="yes">أيوه</div>
           </div>
         </div>
         <div class="field" id="finishTypeField" style="display:none;">
@@ -861,9 +878,14 @@ footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family
 ============================================================ */
 const LS_ORDERS = 'prismops_orders';
 const LS_CLIENTS = 'prismops_clients_meta';
+const LS_SHEET_TYPES = 'prismops_custom_sheet_types';
 
 let orders = JSON.parse(localStorage.getItem(LS_ORDERS) || '[]');
 let clientsMeta = JSON.parse(localStorage.getItem(LS_CLIENTS) || '{}');
+
+const DEFAULT_SHEET_TYPES = ['حديد','استانلس','مجلفن','الومنيوم','نحاس'];
+let customSheetTypes = JSON.parse(localStorage.getItem(LS_SHEET_TYPES) || '[]');
+function saveCustomSheetTypes(){ localStorage.setItem(LS_SHEET_TYPES, JSON.stringify(customSheetTypes)); }
 
 function saveOrders(){ localStorage.setItem(LS_ORDERS, JSON.stringify(orders)); }
 function saveClientsMeta(){ localStorage.setItem(LS_CLIENTS, JSON.stringify(clientsMeta)); }
@@ -908,7 +930,8 @@ function itemsSummaryText(items){
   if(!items.length) return '—';
   return items.map(it=>{
     const name = LABELS.ironType[it.ironType] || it.ironType || '—';
-    return `${name} (${it.weight||0} كجم × ${it.pieceCount||0} قطعة)`;
+    const nameFull = it.sheetType ? `${name} ${it.sheetType}` : name;
+    return `${nameFull} (${it.weight||0} كجم × ${it.pieceCount||0} قطعة)`;
   }).join('، ');
 }
 
@@ -1214,6 +1237,44 @@ function wireChipGroup(id){
 ['ironTypeChips','finishChips','finishTypeChips'].forEach(wireChipGroup);
 function getChipVal(id){ const sel=document.querySelector('#'+id+' .chip.sel'); return sel?sel.dataset.val:null; }
 
+/* نوع الصاج — sub-list shown only when الخام = صاج, plus support for adding custom types */
+function renderSheetTypeChips(selectVal){
+  const group = document.getElementById('sheetTypeChips');
+  const prevSel = selectVal || getChipVal('sheetTypeChips');
+  const all = DEFAULT_SHEET_TYPES.concat(customSheetTypes);
+  group.innerHTML = all.map(name=>{
+    const sel = (name===prevSel) ? ' sel' : '';
+    return `<div class="chip${sel}" data-val="${esc(name)}">${esc(name)}</div>`;
+  }).join('');
+  wireChipGroup('sheetTypeChips');
+}
+renderSheetTypeChips();
+
+document.getElementById('ironTypeChips').addEventListener('click', ()=>{
+  const val = getChipVal('ironTypeChips');
+  document.getElementById('sheetTypeField').style.display = (val==='sheet') ? 'block' : 'none';
+  if(val!=='sheet'){
+    document.querySelectorAll('#sheetTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  }
+});
+
+document.getElementById('addCustomSheetTypeBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('f_customSheetType');
+  const name = input.value.trim();
+  if(!name){ toast('اكتب اسم نوع الصاج الأول'); return; }
+  const all = DEFAULT_SHEET_TYPES.concat(customSheetTypes);
+  const exists = all.some(x=>x.toLowerCase()===name.toLowerCase());
+  if(exists){ toast('النوع ده موجود أصلاً في القايمة'); }
+  else{
+    customSheetTypes.push(name);
+    saveCustomSheetTypes();
+    toast('اتضاف نوع الصاج ✓');
+  }
+  renderSheetTypeChips(name);
+  input.value='';
+  renderCostPreview();
+});
+
 /* show/hide finish-type sub-choices, and live weight readout */
 document.getElementById('finishChips').addEventListener('click', ()=>{
   const val = getChipVal('finishChips');
@@ -1300,8 +1361,10 @@ attachStepper('f_workers', 1, 0);
 let currentOrderItems = [];
 
 function resetSpecFields(){
-  document.querySelectorAll('#ironTypeChips .chip, #finishChips .chip, #finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('#ironTypeChips .chip, #finishChips .chip, #finishTypeChips .chip, #sheetTypeChips .chip').forEach(c=>c.classList.remove('sel'));
   document.getElementById('finishTypeField').style.display='none';
+  document.getElementById('sheetTypeField').style.display='none';
+  document.getElementById('f_customSheetType').value='';
   document.getElementById('f_length').value='';
   document.getElementById('f_width').value='';
   document.getElementById('f_thickness').value='';
@@ -1313,6 +1376,8 @@ function resetSpecFields(){
 document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
   const ironType = getChipVal('ironTypeChips');
   if(!ironType){ toast('اختار نوع الخام الأول'); return; }
+  const sheetType = ironType==='sheet' ? (getChipVal('sheetTypeChips') || '') : '';
+  if(ironType==='sheet' && !sheetType){ toast('اختار نوع الصاج'); return; }
   const length = parseFloat(document.getElementById('f_length').value)||0;
   const width = parseFloat(document.getElementById('f_width').value)||0;
   const thickness = parseFloat(document.getElementById('f_thickness').value)||0;
@@ -1323,7 +1388,7 @@ document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
   if(finish==='yes' && !finishType){ toast('اختار نوع التشطيب'); return; }
 
   const weight = computeWeight(length, width, thickness, pieceCount);
-  currentOrderItems.push({ ironType, length, width, thickness, pieceCount, weight, finish, finishType });
+  currentOrderItems.push({ ironType, sheetType, length, width, thickness, pieceCount, weight, finish, finishType });
   renderSpecItemsList();
   resetSpecFields();
   toast('اتضافت المواصفة دي للشغلانة ✓');
@@ -1340,10 +1405,11 @@ function renderSpecItemsList(){
   empty.style.display='none';
   wrap.innerHTML = currentOrderItems.map((it,idx)=>{
     const name = LABELS.ironType[it.ironType]||it.ironType;
+    const nameFull = it.sheetType ? `${name} (${it.sheetType})` : name;
     const finishTxt = it.finish==='yes' ? ('تشطيب: '+(LABELS.finishType[it.finishType]||it.finishType)) : 'من غير تشطيب';
     return `<div class="spec-item-row">
       <div class="si-main">
-        <b>${name}</b> — ${it.weight} كجم × ${it.pieceCount} قطعة
+        <b>${nameFull}</b> — ${it.weight} كجم × ${it.pieceCount} قطعة
         <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; ${finishTxt}</div>
       </div>
       <button type="button" class="spec-item-remove" onclick="removeSpecItem(${idx})">✕</button>
@@ -1517,10 +1583,11 @@ function openOrderModal(id){
 
   const itemsRows = items.map(it=>{
     const name = LABELS.ironType[it.ironType]||it.ironType||'—';
+    const nameFull = it.sheetType ? `${name} (${esc(it.sheetType)})` : name;
     const finishTxt = it.finish==='yes' ? (LABELS.finishType[it.finishType]||it.finishType||'—') : 'لأ';
     return `<div class="spec-item-row">
       <div class="si-main">
-        <b>${name}</b> — ${it.weight||0} كجم × ${it.pieceCount||0} قطعة
+        <b>${nameFull}</b> — ${it.weight||0} كجم × ${it.pieceCount||0} قطعة
         <div class="si-meta">${it.length||0}×${it.width||0}×${it.thickness||0} مم &nbsp;·&nbsp; تشطيب: ${finishTxt}</div>
       </div>
     </div>`;
