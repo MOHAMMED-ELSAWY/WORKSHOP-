@@ -1,1647 +1,1203 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>PrismOps — نظام تشغيل المصنع</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* ============================================================
-   PRISMOPS — TOKENS
-============================================================ */
-:root{
-  --bg:#0f172a;
-  --panel:#1a2540;
-  --panel-2:#22304d;
-  --line:#324867;
-  --line-soft:#293a58;
-  --ink:#e8edf7;
-  --ink-dim:#9aa8c0;
-  --ink-faint:#64748b;
-  --accent:#f59e0b;
-  --accent-2:#fbbf24;
-  --accent-soft:rgba(245,158,11,.14);
-  --accent-glow:rgba(245,158,11,.4);
-  --ok:#10b981;
-  --ok-soft:rgba(16,185,129,.14);
-  --ok-glow:rgba(16,185,129,.4);
-  --warn:#fb923c;
-  --warn-soft:rgba(251,146,60,.14);
-  --warn-glow:rgba(251,146,60,.4);
-  --bad:#ef4444;
-  --bad-soft:rgba(239,68,68,.16);
-  --bad-glow:rgba(239,68,68,.45);
-  --font-a:'Tajawal',sans-serif;
-  --font-m:'JetBrains Mono',monospace;
-  --radius:10px;
-  --radius-pill:9999px;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.2), 0 1px 1px rgba(0,0,0,.15);
-  --shadow-md:0 8px 20px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.2);
-  --ease:cubic-bezier(.22,1,.36,1);
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISMOPS - نظام إدارة ورشة التصنيع</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-*{box-sizing:border-box; margin:0; padding:0;}
+    <style>
+        :root {
+            --bg-dark: #0a0f18;
+            --sidebar-bg: #101722;
+            --card-bg: #141d2b;
+            --card-border: #1e293b;
+            --accent-yellow: #f59e0b;
+            --accent-yellow-dark: #d97706;
+            --text-white: #f8fafc;
+            --text-muted: #94a3b8;
+            --green: #10b981;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
 
-html{scroll-behavior:smooth;}
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-white); overflow-x: hidden; }
+        .app-container { display: flex; min-height: 100vh; }
 
-body{
-  background:var(--bg);
-  color:var(--ink);
-  font-family:var(--font-a);
-  min-height:100vh;
-  padding-bottom:60px;
-  -webkit-font-smoothing:antialiased;
-}
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background-color: var(--sidebar-bg); border-left: 1px solid var(--card-border);
+            display: flex; flex-direction: column; padding: 20px; position: fixed; height: 100vh; right: 0; z-index: 100;
+            transition: transform .25s ease;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 20px; }
+        .logo-box { background: var(--accent-yellow); color: #000; padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .brand-text h2 { font-size: 20px; letter-spacing: 1px; color: #fff; }
+        .brand-text span { font-size: 11px; color: var(--text-muted); }
+        .sidebar-close-btn { display: none; background: none; border: none; color: var(--text-muted); margin-inline-start: auto; cursor: pointer; }
 
-::selection{background:var(--accent-soft); color:var(--accent-2);}
+        .nav-section { margin-top: 20px; flex-grow: 1; }
+        .nav-label { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: block; }
+        .nav-menu { display: flex; flex-direction: column; gap: 6px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; min-height: 44px; }
+        .nav-item:hover { background-color: #1a2433; color: #fff; }
+        .nav-item.active { background-color: #1e2836; color: var(--accent-yellow); border-color: rgba(245, 158, 11, 0.3); font-weight: 600; }
 
-button, input, select, textarea{ font-family:inherit; color:inherit; }
+        .sidebar-footer { border-top: 1px solid var(--card-border); padding-top: 15px; }
+        .status-badge { display: flex; align-items: center; gap: 10px; background: #0b111a; padding: 10px; border-radius: 8px; font-size: 12px; border: 1px solid var(--card-border); cursor: pointer; }
+        .status-badge .dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); flex: none; }
+        .version { display: flex; justify-content: space-between; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
 
-.mono{ font-family:var(--font-m); font-feature-settings:"tnum"; direction:ltr; unicode-bidi:isolate; }
+        /* Main Content */
+        .main-content { margin-right: 260px; flex-grow: 1; display: flex; flex-direction: column; min-height: 100vh; width: calc(100% - 260px); }
+        .top-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 25px; background-color: var(--bg-dark); flex-wrap: wrap; gap: 10px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .avatar { width: 36px; height: 36px; background: var(--accent-yellow); color: #000; font-weight: bold; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex: none; }
+        .user-info { display: flex; flex-direction: column; font-size: 12px; }
+        .user-info span { color: var(--text-muted); font-size: 10px; }
+        .page-title { display: flex; align-items: center; gap: 12px; }
+        .page-title h1 { font-size: 18px; }
+        .page-title span { font-size: 11px; color: var(--text-muted); }
+        .menu-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; padding: 8px 10px; border-radius: 6px; cursor: pointer; display: none; min-height:40px; }
 
-/* ============================================================
-   HEADER
-============================================================ */
-header.top{
-  position:sticky; top:0; z-index:40;
-  background:rgba(15,23,42,.92);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);
-}
-.top-inner{
-  max-width:1180px; margin:0 auto;
-  display:flex; align-items:center; gap:14px;
-  padding:14px 18px 0;
-}
-.brand{ display:flex; align-items:center; gap:10px; }
-.brand-text h1{
-  font-size:18px; font-weight:800; letter-spacing:.2px; color:var(--ink);
-}
-.brand-text h1 span{ color:var(--accent); }
-.brand-text p{
-  font-size:11.5px; color:var(--ink-faint); font-weight:500;
-  margin-top:1px;
-}
-.top-status{
-  margin-inline-start:auto;
-  display:flex; align-items:center; gap:8px;
-  font-family:var(--font-m); font-size:11px; color:var(--ink-faint);
-}
-.dot-live{ width:7px; height:7px; border-radius:50%; background:var(--ok); animation:pulse 2s infinite; }
-@keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.4;} }
+        .hazard-bar { height: 8px; background: repeating-linear-gradient(-45deg, var(--accent-yellow), var(--accent-yellow) 12px, #000 12px, #000 24px); width: 100%; }
 
-::-webkit-scrollbar{ width:9px; height:9px; }
-::-webkit-scrollbar-track{ background:var(--bg); }
-::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px; }
-::-webkit-scrollbar-thumb:hover{ background:var(--accent-2); }
+        .view-page { display: none; padding: 25px; }
+        .view-page.active { display: block; }
 
-nav.tabs{
-  max-width:1180px; margin:14px auto 0; padding:0 18px;
-  display:flex; gap:6px; overflow-x:auto;
-}
-nav.tabs::-webkit-scrollbar{ display:none; }
-.tab-btn{
-  background:transparent; border:1px solid transparent; border-bottom:none;
-  color:var(--ink-dim); padding:10px 16px 12px; font-size:13px; font-weight:600;
-  display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap;
-  border-radius:2px 2px 0 0; position:relative;
-  transition:color .2s var(--ease);
-}
-.tab-btn svg{ width:15px; height:15px; opacity:.8; transition:opacity .2s; }
-.tab-btn:hover{ color:var(--ink); }
-.tab-btn.active{
-  color:var(--accent);
-  border-color:var(--line); border-bottom:1px solid var(--panel);
-  background:var(--panel);
-  border-radius:8px 8px 0 0;
-}
-.tab-btn.active::after{
-  content:''; position:absolute; left:8px; right:8px; bottom:-1px; height:2px;
-  background:var(--accent);
-}
-.tab-btn.active svg{ opacity:1; }
+        .btn-primary { background: var(--accent-yellow); color: #000; border: none; padding: 12px 18px; border-radius: 8px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; min-height: 44px; }
+        .btn-primary:hover { background: var(--accent-yellow-dark); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-edit { background: #172130; color: #fff; border: 1px solid var(--card-border); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; min-height: 36px; }
+        .btn-edit:hover { background: #223046; border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .btn-danger-ghost { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-danger-ghost:hover { background: rgba(239,68,68,.12); }
 
-main{ max-width:1180px; margin:0 auto; padding:22px 18px 0; }
+        .hero-banner { background: linear-gradient(90deg, #182230 0%, #111923 100%); border: 1px solid var(--card-border); border-radius: 12px; padding: 22px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; }
+        .shift-tag { background: #2a1f0c; color: var(--accent-yellow); padding: 3px 8px; border-radius: 5px; font-size: 11px; border: 1px solid #4d3611; }
+        .hero-text h2 { font-size: 24px; margin: 6px 0; }
+        .hero-text p { color: var(--text-muted); font-size: 13px; }
 
-.view{ display:none; animation:fade .25s ease; }
-.view.active{ display:block; }
-@keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); border-radius: 10px; padding: 15px; border: 1px solid var(--card-border); border-top: 3px solid transparent; }
+        .border-yellow { border-top-color: var(--accent-yellow); }
+        .border-orange { border-top-color: #f97316; }
+        .border-red { border-top-color: var(--red); }
+        .border-green { border-top-color: var(--green); }
+        .border-blue { border-top-color: var(--blue); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 10px; padding: 2px 5px; border-radius: 4px; display: flex; align-items: center; gap: 2px; }
+        .badge-green { background: #064e3b; color: #34d399; }
+        .badge-red { background: #4c1d1d; color: #f87171; }
+        .badge-flat { background: #1e293b; color: var(--text-muted); }
+        .stat-body { margin-top: 10px; }
+        .stat-body h3 { font-size: 24px; font-family: var(--font-mono); }
+        .stat-body span { font-size: 12px; color: var(--text-muted); display: block; }
+        .stat-body small { font-size: 10px; color: #64748b; }
 
-/* ============================================================
-   SHARED — CARD
-============================================================ */
-.spec-card{
-  position:relative;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow-sm);
-  transition:transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
-}
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .section-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
 
-.section-label{
-  display:flex; align-items:center; gap:10px;
-  font-family:var(--font-m); font-size:11px; letter-spacing:2px; color:var(--accent);
-  text-transform:uppercase; margin-bottom:12px;
-}
-.section-label::after{ content:''; flex:1; height:1px; background:var(--line); }
+        .table-scroll { overflow: auto; max-height: 460px; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+        .data-table th { color: var(--text-muted); padding: 12px 10px; border-bottom: 1px solid var(--card-border); font-weight: 600; position: sticky; top: 0; background: var(--card-bg); white-space: nowrap; }
+        .data-table td { padding: 14px 10px; border-bottom: 1px solid #1a2535; }
+        .data-table tr.clickable { cursor: pointer; }
+        .data-table tr.clickable:hover td { color: var(--accent-yellow); }
+        .code-cell { color: var(--accent-yellow); font-family: var(--font-mono); }
+        .empty-note { color: var(--text-muted); font-size: 12.5px; padding: 14px 4px; }
 
-/* status pill badge */
-.stamp{
-  font-family:var(--font-a); font-size:11.5px; font-weight:700;
-  padding:4px 12px; border:1px solid transparent; border-radius:var(--radius-pill);
-  display:inline-flex; align-items:center; gap:6px;
-}
-.stamp.ok{ color:var(--ok); background:var(--ok-soft); }
-.stamp.warn{ color:var(--warn); background:var(--warn-soft); }
-.stamp.bad{ color:var(--bad); background:var(--bad-soft); animation:stampPulse 1.8s infinite; }
-@keyframes stampPulse{ 0%,100%{ box-shadow:0 0 0 0 var(--bad-glow); } 50%{ box-shadow:0 0 0 4px transparent; } }
-.stamp::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
+        .mini-pipeline { display: flex; align-items: center; gap: 3px; max-width: 200px; margin-top: 6px; }
+        .mini-pipeline .mp-seg { flex: 1; height: 5px; border-radius: 3px; background: #263346; }
+        .mini-pipeline .mp-seg.filled { background: var(--green); }
+        .mini-pipeline .mp-seg.current { background: var(--accent-yellow); }
 
-/* ============================================================
-   DASHBOARD
-============================================================ */
-.kpi-row{
-  display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
-  margin-bottom:22px;
-}
-@media(min-width:720px){ .kpi-row{ grid-template-columns:repeat(5,1fr); } }
-.kpi{
-  background:var(--panel);
-  border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm);
-  padding:14px 14px 12px;
-  border-inline-start:3px solid var(--accent);
-  transition:transform .2s var(--ease), box-shadow .2s var(--ease);
-  position:relative; overflow:hidden;
-}
-.kpi:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
-.kpi .num{ font-family:var(--font-m); font-size:26px; font-weight:700; direction:ltr; display:block; }
-.kpi .lbl{ font-size:11px; color:var(--ink-dim); margin-top:4px; }
+        .status-pill { padding: 4px 9px; border-radius: 6px; font-size: 11px; display: inline-block; white-space: nowrap; }
+        .status-pill.warning { background: #3b2a12; color: var(--accent-yellow); border: 1px solid #634316; }
+        .status-pill.info { background: #132d42; color: #60a5fa; border: 1px solid #1d4ed8; }
+        .status-pill.danger { background: #3d1414; color: var(--red); border: 1px solid #991b1b; }
+        .status-pill.success { background: #06301f; color: #34d399; border: 1px solid #0e5c3c; }
 
-.gauge-card{
-  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm);
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  padding:14px 8px 12px; position:relative; overflow:hidden;
-  transition:transform .2s var(--ease), box-shadow .2s var(--ease);
-}
-.gauge-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md); }
-.gauge-wrap{ position:relative; width:76px; height:76px; }
-.gauge-wrap svg{ width:76px; height:76px; transform:rotate(-90deg); overflow:visible; }
-.gauge-track{ fill:none; stroke:var(--line-soft); stroke-width:7; }
-.gauge-fill{ fill:none; stroke-width:7; stroke-linecap:round; stroke-dasharray:263.9; stroke-dashoffset:263.9; transition:stroke-dashoffset 1s var(--ease); }
-.gauge-num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-m); font-weight:700; font-size:17px; direction:ltr; }
-.gauge-card .lbl{ font-size:10.5px; color:var(--ink-dim); text-align:center; }
-.trend{ font-family:var(--font-m); font-size:10px; font-weight:600; direction:ltr; display:inline-flex; align-items:center; gap:2px; }
-.trend.up{ color:var(--ok); }
-.trend.down{ color:var(--bad); }
-.trend.flat{ color:var(--ink-faint); }
+        .alerts-list { display: flex; flex-direction: column; gap: 12px; max-height: 460px; overflow: auto; }
+        .alert-card { background: #0f1622; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; cursor: pointer; }
+        .alert-card:hover { border-color: var(--red); }
+        .alert-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+        .delay-tag { background: #3d1414; color: var(--red); font-size: 10px; padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+        .alert-title { font-size: 13px; margin-bottom: 2px; }
+        .alert-client { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+        .alert-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); border-top: 1px solid #1b2636; padding-top: 6px; }
 
-.dash-grid{ display:grid; gap:18px; }
-@media(min-width:900px){ .dash-grid{ grid-template-columns:1.3fr 1fr; } }
+        .search-bar-box { position: relative; margin-bottom: 25px; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+        .search-input { width: 100%; max-width: 450px; background: #0f1622; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px 40px 12px 15px; color: #fff; font-size: 13px; outline: none; transition: 0.2s; min-height: 44px; }
+        .search-input:focus { border-color: var(--accent-yellow); }
+        .search-icon { position: absolute; left: 12px; top: 12px; color: var(--text-muted); width: 18px; pointer-events:none; }
 
-.panel-block{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:16px; }
-.panel-block h3{ font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .clients-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .client-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; cursor: pointer; }
+        .client-card:hover { border-color: var(--accent-yellow); transform: translateY(-2px); }
+        .client-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px; }
+        .client-avatar-box { width: 42px; height: 42px; background: #1e2838; color: var(--accent-yellow); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; border: 1px solid var(--card-border); flex-shrink: 0; }
+        .client-main-info h3 { font-size: 16px; margin-bottom: 2px; }
+        .client-main-info span { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+        .client-meta { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+        .client-meta div { display: flex; align-items: center; gap: 8px; }
+        .client-stats-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .client-stat-subcard { background: #0f1622; border: 1px solid #1a2535; border-radius: 8px; padding: 12px; text-align: center; }
+        .client-stat-subcard span { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .client-stat-subcard strong { font-size: 18px; display: block; font-family: var(--font-mono); }
 
-.alert-row{
-  display:flex; align-items:center; gap:10px; padding:9px 0;
-  border-bottom:1px dashed var(--line-soft); font-size:12.5px;
-}
-.alert-row:last-child{ border-bottom:none; }
-.alert-row .ic{ color:var(--bad); flex:none; }
-.alert-row b{ font-weight:600; }
-.alert-row .meta{ margin-inline-start:auto; font-family:var(--font-m); font-size:11px; color:var(--ink-faint); }
-.empty-note{ color:var(--ink-faint); font-size:12.5px; padding:8px 0; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-yellow); background: none; border: none; cursor: pointer; font-size: 13px; margin-bottom: 16px; }
 
-.recent-item{
-  display:flex; align-items:center; gap:10px; padding:10px 8px;
-  border-bottom:1px dashed var(--line-soft); font-size:12.5px; cursor:pointer;
-  border-radius:2px; transition:background .2s var(--ease), padding-right .2s var(--ease);
-}
-.recent-item:hover{ background:rgba(34,211,238,.05); padding-right:12px; }
-.recent-item:last-child{ border-bottom:none; }
-.recent-item:hover .rname{ color:var(--accent); }
-.recent-item .rid{ font-family:var(--font-m); color:var(--ink-faint); font-size:10.5px; direction:ltr; }
-.recent-item .rname{ font-weight:600; }
-.recent-item .rmeta{ margin-inline-start:auto; color:var(--ink-dim); font-size:11px; }
+        .costs-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .costs-tabs-box { background: #0d1420; border: 1px solid var(--card-border); border-radius: 10px; padding: 4px; display: flex; gap: 6px; width: 100%; max-width: 800px; margin: 0 auto 20px auto; }
+        .cost-tab { flex: 1; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+        .cost-tab.active { background: var(--accent-yellow); color: #000; font-weight: bold; }
 
-/* ============================================================
-   FORM
-============================================================ */
-.form-wrap{ display:grid; gap:18px; }
-@media(min-width:900px){ .form-wrap{ grid-template-columns:1fr 1fr; } }
-.form-section{ padding:18px; }
-.form-section.full{ grid-column:1/-1; }
+        .notice-banner { background: #111a27; border: 1px solid #1f2d40; border-right: 4px solid var(--accent-yellow); border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .notice-title { font-size: 14px; font-weight: bold; color: var(--accent-yellow); margin-bottom: 2px; }
+        .notice-sub { font-size: 11px; color: var(--text-muted); }
 
-.field{ margin-bottom:14px; }
-.field label{ display:block; font-size:12px; color:var(--ink-dim); margin-bottom:6px; letter-spacing:.2px; }
-.field label .req{ color:var(--accent); }
-.field input[type=text], .field input[type=number], .field input[type=date], .field input[type=tel], .field textarea{
-  width:100%; min-height:48px; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; color:var(--ink);
-  padding:10px 13px; font-size:14px; font-family:var(--font-a);
-}
-.field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
-.field textarea{ resize:vertical; min-height:70px; }
+        .cost-stats-summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px; }
+        .summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 15px; text-align: center; }
+        .summary-box span { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px; }
+        .summary-box strong { font-size: 18px; display: block; font-family: var(--font-mono); }
 
-.chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
-.chip{
-  border:1px solid var(--line); background:var(--panel-2); color:var(--ink-dim);
-  min-height:44px; padding:10px 16px; font-size:13.5px; cursor:pointer; transition:all .2s var(--ease); display:flex; align-items:center; gap:6px;
-  border-radius:8px;
-}
-.chip:hover{ border-color:var(--accent-2); color:var(--ink); }
-.chip.sel{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); font-weight:700; }
+        .editable-price-input { background: #0d1420; border: 1px solid #233146; color: var(--accent-yellow); font-weight: bold; padding: 8px 10px; border-radius: 6px; width: 90px; text-align: center; outline: none; font-size: 14px; min-height: 40px; }
+        .editable-price-input:focus { border-color: var(--accent-yellow); background: #141f30; }
+        .add-material-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .add-material-row input { background: #0c121c; border: 1px solid var(--card-border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none; min-height: 44px; }
 
-.row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .order-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        .cost-sheet-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; position: sticky; top: 20px; height: fit-content; }
+        .cost-sheet-header { background: repeating-linear-gradient(-45deg, #241d13, #241d13 8px, #171b24 8px, #171b24 16px); padding: 15px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+        .cost-sheet-title { color: var(--accent-yellow); font-size: 14px; font-weight: bold; }
+        .cost-sheet-subtitle { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+        .cost-sheet-body { padding: 15px; }
+        .cost-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--text-muted); }
+        .cost-row strong { color: var(--text-white); font-family: var(--font-mono); }
+        .cost-divider { border-top: 1px dashed var(--card-border); margin: 12px 0; }
+        .profit-margin-box { background: #0d1420; border: 1px dashed var(--card-border); border-radius: 10px; padding: 15px; text-align: center; margin-top: 15px; }
+        .margin-label { font-size: 11px; color: var(--text-muted); }
+        .margin-value { font-size: 28px; font-weight: 800; color: var(--green); margin-top: 4px; font-family: var(--font-mono); }
+        .weight-footer { background: #0d121a; padding: 10px; border-radius: 6px; font-size: 12px; text-align: center; color: var(--text-muted); margin-top: 15px; border: 1px solid #1a2535; }
 
-.btn{
-  border:1px solid var(--accent); background:var(--accent); color:#1a1203;
-  min-height:48px; padding:12px 22px; font-size:14px; font-weight:700; cursor:pointer;
-  display:inline-flex; align-items:center; gap:8px; letter-spacing:.2px;
-  border-radius:8px;
-  transition:transform .15s var(--ease), box-shadow .15s var(--ease), background-color .15s var(--ease);
-}
-.btn:hover{ background:var(--accent-2); box-shadow:var(--shadow-md); }
-.btn:active{ transform:translateY(1px); }
-.btn.ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
-.btn.ghost:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
-.btn.danger{ background:transparent; color:var(--bad); border-color:var(--bad); }
-.btn.danger:hover{ background:var(--bad-soft); }
-.btn.small{ min-height:40px; padding:8px 16px; font-size:12.5px; }
-.btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+        .form-section-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .step-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: bold; }
+        .step-number { background: #262116; color: var(--accent-yellow); padding: 2px 8px; border-radius: 6px; font-size: 12px; border: 1px solid #4a3615; font-family: var(--font-mono); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: span 2; }
+        .form-group label { font-size: 12px; color: var(--text-muted); }
+        .form-group label span { color: var(--red); }
+        .form-control { background: #0c121c; border: 1px solid var(--card-border); color: #fff; padding: 12px 14px; border-radius: 8px; font-size: 13px; outline: none; transition: 0.2s; min-height: 44px; width: 100%; }
+        .form-control:focus { border-color: var(--accent-yellow); }
+        .chip-options { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .chip { background: #0c121c; border: 1px solid var(--card-border); padding: 10px 16px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.2s; color: var(--text-muted); min-height: 40px; display:flex; align-items:center; }
+        .chip.active { background: #332612; border-color: var(--accent-yellow); color: var(--accent-yellow); font-weight: 600; }
 
-.form-actions{ grid-column:1/-1; display:flex; justify-content:flex-start; margin-top:4px; }
+        .item-input-box { background: #0c121c; border: 1px dashed var(--card-border); border-radius: 10px; padding: 15px; display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 10px; align-items: end; }
+        .calc-weight-box { background: #141d2a; border: 1px solid var(--card-border); padding: 10px; border-radius: 8px; text-align: center; }
+        .calc-weight-box span { font-size: 10px; color: var(--text-muted); display: block; }
+        .calc-weight-box strong { font-size: 16px; color: var(--accent-yellow); font-family: var(--font-mono); }
+        .registered-items-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .registered-item { background: #0e1622; border: 1px solid var(--card-border); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .btn-delete { background: transparent; border: none; color: var(--red); cursor: pointer; padding: 5px; }
+        .action-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-secondary { background: #1a2433; color: #fff; border: 1px solid var(--card-border); padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; min-height: 44px; }
+        .btn-accent { background: var(--accent-yellow); color: #000; border: none; padding: 12px 35px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; min-height: 48px; }
 
-.stepper-field{ display:flex; align-items:stretch; gap:6px; }
-.stepper-field input{ flex:1; text-align:center; }
-.stepper-btn{
-  min-width:44px; min-height:48px; border:1px solid var(--line); background:var(--panel-2); color:var(--ink);
-  font-size:19px; font-weight:700; border-radius:8px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; flex:none; line-height:1;
-  transition:.15s var(--ease);
-}
-.stepper-btn:hover{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
-.stepper-btn:active{ transform:scale(.94); }
+        /* Modal */
+        .overlay { position: fixed; inset: 0; background: rgba(4,8,13,.75); display: none; align-items: flex-start; justify-content: center; z-index: 300; padding: 26px 16px; overflow-y: auto; }
+        .overlay.active { display: flex; }
+        .modal { background: var(--card-bg); border: 1px solid var(--card-border); width: 100%; max-width: 540px; border-radius: 12px; overflow: hidden; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--card-border); }
+        .modal-head h3 { font-size: 15px; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
+        .modal-body { padding: 18px; }
+        .modal-foot { padding: 14px 18px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; flex-wrap: wrap; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 14px; }
+        .detail-grid .d { font-size: 12.5px; }
+        .detail-grid .d .k { color: var(--text-muted); font-size: 10.5px; display: block; margin-bottom: 2px; }
+        .detail-grid .d .v { font-weight: 600; }
 
-.cost-preview-box{ background:var(--accent-soft); border:1px solid var(--accent); border-radius:var(--radius); padding:12px 16px; margin:16px 0; }
-.cp-row{ display:flex; justify-content:space-between; align-items:center; font-size:12.5px; padding:4px 0; color:var(--ink-dim); }
-.cp-row .mono{ direction:ltr; font-weight:700; color:var(--ink); }
-.cp-row.total{ border-top:1px solid var(--line); margin-top:4px; padding-top:9px; font-weight:700; font-size:14.5px; color:var(--accent); }
-.cp-row.total .mono{ color:var(--accent); font-size:16px; }
+        .toast { position: fixed; bottom: 22px; left: 22px; z-index: 400; background: var(--card-bg); color: #fff; padding: 13px 18px; font-size: 13px; font-weight: 600; border: 1px solid var(--card-border); border-right: 3px solid var(--green); border-radius: 10px; display: none; box-shadow: 0 12px 32px -10px rgba(0,0,0,.5); max-width: 320px; }
+        .toast.show { display: block; }
+        .sidebar-overlay-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+        .sidebar-overlay-bg.active { display:block; }
 
-/* ============================================================
-   SKELETON LOADERS
-============================================================ */
-.skeleton{ position:relative; overflow:hidden; background:var(--panel-2); border-radius:var(--radius); }
-.skeleton::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent);
-  animation:shimmer 1.2s infinite;
-}
-@keyframes shimmer{ from{ transform:translateX(-100%);} to{ transform:translateX(100%);} }
-.skeleton-card{ height:92px; margin-bottom:10px; border:1px solid var(--line); }
-.skeleton-kpi{ height:118px; border:1px solid var(--line); }
-
-.spec-item-row{
-  display:flex; justify-content:space-between; align-items:center; gap:10px;
-  padding:10px 12px; background:var(--panel-2); border:1px solid var(--line);
-  margin-bottom:8px; font-size:12px;
-}
-.spec-item-row .si-main{ font-weight:600; }
-.spec-item-row .si-meta{ color:var(--ink-dim); font-family:var(--font-m); font-size:11px; direction:ltr; text-align:right; margin-top:3px; }
-.spec-item-row .si-remove{
-  background:none; border:1px solid var(--bad); color:var(--bad); border-radius:50%;
-  width:22px; height:22px; flex:none; cursor:pointer; font-size:12px; line-height:1;
-  display:flex; align-items:center; justify-content:center; transition:.2s var(--ease);
-}
-.spec-item-row .si-remove:hover{ background:rgba(255,59,92,.12); }
-.spec-items-empty{ color:var(--ink-faint); font-size:12px; padding:6px 0; }
-.spec-totals{
-  display:flex; justify-content:space-around; gap:10px; margin-top:12px;
-  padding:12px; background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
-}
-.spec-totals .st{ text-align:center; }
-.spec-totals .st .n{ font-family:var(--font-m); font-size:17px; font-weight:700; color:var(--accent); display:block; }
-.spec-totals .st .l{ font-size:10.5px; color:var(--ink-faint); }
-
-.material-row{
-  display:flex; justify-content:space-between; align-items:center; gap:10px;
-  padding:9px 12px; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; margin-bottom:6px;
-}
-.material-row .m-name{ font-size:13px; font-weight:600; }
-.material-row .m-rate{ font-family:var(--font-m); font-size:12.5px; color:var(--accent); font-weight:700; direction:ltr; }
-.material-row .m-del{
-  background:none; border:1px solid var(--bad); color:var(--bad); border-radius:50%;
-  width:24px; height:24px; flex:none; cursor:pointer; font-size:12px; line-height:1;
-  display:flex; align-items:center; justify-content:center;
-}
-.material-row .m-del:hover{ background:var(--bad-soft); }
-
-/* ============================================================
-   STAGE TRACKER — production process
-============================================================ */
-.stage-track{ display:flex; align-items:flex-start; gap:0; margin:4px 0 2px; }
-.stage-step{ display:flex; flex-direction:column; align-items:center; flex:1; position:relative; cursor:pointer; }
-.stage-track.locked .stage-step{ cursor:default; }
-.stage-step .line{ position:absolute; top:11px; right:50%; width:100%; height:2px; background:var(--line); z-index:1; }
-.stage-step:first-child .line{ display:none; }
-.stage-step .circle{
-  width:22px; height:22px; border-radius:50%; border:1.5px solid var(--line); background:var(--panel-2);
-  display:flex; align-items:center; justify-content:center; font-family:var(--font-m); font-size:10px;
-  color:var(--ink-faint); z-index:2; transition:all .2s var(--ease); flex:none;
-}
-.stage-step.done .circle{ border-color:var(--ok); color:var(--ok); background:rgba(46,232,120,.12); box-shadow:0 0 10px -3px var(--ok-glow); }
-.stage-step.done .line{ background:var(--ok); }
-.stage-step.current .circle{ border-color:var(--accent); color:var(--accent); background:rgba(139,92,246,.18); animation:stepGlow 1.6s infinite; }
-@keyframes stepGlow{ 0%,100%{ box-shadow:0 0 0 3px rgba(139,92,246,.16); } 50%{ box-shadow:0 0 0 6px rgba(139,92,246,.05); } }
-.stage-step:hover .circle{ border-color:var(--accent); transform:scale(1.08); }
-.stage-step .lbl{ font-size:9px; color:var(--ink-faint); margin-top:6px; text-align:center; max-width:62px; line-height:1.3; }
-.stage-step.done .lbl, .stage-step.current .lbl{ color:var(--ink); }
-
-.stage-mini{ display:flex; align-items:center; gap:8px; margin-top:8px; }
-.stage-mini-bar{ flex:1; height:4px; background:var(--line-soft); position:relative; overflow:hidden; max-width:140px; border-radius:3px; }
-.stage-mini-bar span{ position:absolute; top:0; right:0; height:100%; background:linear-gradient(90deg, var(--accent-2), var(--accent)); box-shadow:0 0 8px var(--accent-glow); width:0; transition:width .7s var(--ease); }
-.stage-mini-label{ font-size:10.5px; color:var(--accent); white-space:nowrap; }
-
-/* ============================================================
-   ORDERS LIST
-============================================================ */
-.toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
-.search-box{ position:relative; flex:1; min-width:200px; }
-.search-box input{
-  width:100%; background:var(--panel); border:1px solid var(--line); color:var(--ink);
-  padding:10px 14px 10px 36px; font-size:13px;
-}
-.search-box svg{ position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--ink-faint); }
-.filter-set{ display:flex; gap:6px; }
-.filter-set button{
-  border:1px solid var(--line); background:var(--panel); color:var(--ink-dim);
-  padding:9px 13px; font-size:12px; cursor:pointer;
-}
-.filter-set button.active{ border-color:var(--accent); color:var(--accent); }
-
-.order-card{
-  padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:border-color .15s;
-  display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
-}
-.order-card:hover{ border-color:var(--accent-2); transform:translateY(-3px); box-shadow:0 10px 24px -12px rgba(0,0,0,.5), 0 0 0 1px var(--accent-glow); }
-.order-card .oc-id{ font-family:var(--font-m); font-size:10px; color:var(--ink-faint); direction:ltr; margin-bottom:3px; }
-.order-card .oc-title{ font-size:14px; font-weight:700; }
-.order-card .oc-client{ font-size:11.5px; color:var(--accent); margin-top:2px; }
-.order-card .oc-meta{ display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }
-.order-card .oc-meta span{ font-size:11px; color:var(--ink-dim); font-family:var(--font-m); direction:ltr; }
-.order-card .oc-right{ text-align:left; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-
-/* ============================================================
-   CLIENTS
-============================================================ */
-.client-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
-@media(min-width:720px){ .client-grid{ grid-template-columns:1fr 1fr; } }
-@media(min-width:1080px){ .client-grid{ grid-template-columns:1fr 1fr 1fr; } }
-
-.client-card{ padding:16px; cursor:pointer; }
-.client-card:hover{ transform:translateY(-3px); box-shadow:0 10px 24px -12px rgba(0,0,0,.5), 0 0 0 1px var(--accent-glow); border-color:var(--accent-2); }
-.client-card .cc-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
-.client-card .cc-name{ font-size:15px; font-weight:700; }
-.client-card .cc-name .ic{ color:var(--accent); margin-inline-end:6px; }
-.client-card .cc-badge{ font-family:var(--font-m); font-size:10px; color:var(--ink-faint); }
-.client-stat-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
-.client-stat-row div{ text-align:center; border-top:1px solid var(--line-soft); padding-top:8px; }
-.client-stat-row .n{ font-family:var(--font-m); font-size:16px; font-weight:700; display:block; }
-.client-stat-row .l{ font-size:10px; color:var(--ink-faint); }
-
-.client-detail{ display:none; }
-.client-detail.active{ display:block; }
-.back-btn{
-  display:inline-flex; align-items:center; gap:6px; color:var(--accent); background:none; border:none;
-  cursor:pointer; font-size:12.5px; margin-bottom:16px; padding:0;
-}
-.detail-head{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; padding:18px; margin-bottom:16px; }
-.detail-head h2{ font-size:19px; }
-.detail-contact{ margin-top:6px; font-size:12px; color:var(--ink-dim); font-family:var(--font-m); direction:ltr; text-align:right; }
-.detail-kpis{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
-@media(min-width:600px){ .detail-kpis{ grid-template-columns:repeat(4,1fr); } }
-
-.history-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
-.history-table th{ position:sticky; top:0; z-index:2; background:var(--panel); text-align:right; font-size:10.5px; color:var(--ink-faint); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line); letter-spacing:.5px;}
-.history-table td{ padding:10px; border-bottom:1px solid var(--line-soft); }
-.history-table tr{ cursor:pointer; }
-.history-table tr:hover td{ color:var(--accent); }
-.table-wrap{ overflow-x:auto; overflow-y:auto; max-height:420px; }
-
-.notes-box textarea{ width:100%; min-height:80px; background:var(--panel-2); border:1px solid var(--line); color:var(--ink); padding:10px; font-size:12.5px; margin-top:8px;}
-
-/* ============================================================
-   COST TABLE
-============================================================ */
-#costTable{ min-width:820px; }
-#costTable .price-input{
-  width:88px; background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
-  padding:6px 8px; font-size:12px; font-family:var(--font-m); direction:ltr;
-}
-#costTable .price-input:focus{ outline:none; border-color:var(--accent); }
-.profit-pos{ color:var(--ok); font-weight:700; text-shadow:0 0 12px var(--ok-glow); }
-.profit-neg{ color:var(--bad); font-weight:700; text-shadow:0 0 12px var(--bad-glow); }
-.cost-breakdown-box{ padding:16px; margin-bottom:16px; }
-.cost-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px dashed var(--line-soft); }
-.cost-line.total{ border-bottom:none; border-top:1px solid var(--line); margin-top:4px; padding-top:10px; font-weight:700; font-size:14px; }
-.cost-line .v{ font-family:var(--font-m); direction:ltr; }
-
-/* ============================================================
-   EXPORT
-============================================================ */
-.export-row{ display:flex; justify-content:space-between; align-items:center; gap:14px; padding:18px; margin-bottom:12px; flex-wrap:wrap; }
-.export-row .ex-title{ font-weight:700; font-size:13.5px; margin-bottom:4px; }
-.export-row .ex-desc{ font-size:11.5px; color:var(--ink-dim); }
-.danger-zone{ border-color:var(--bad); }
-.danger-zone::before, .danger-zone::after{ border-color:var(--bad); }
-
-/* ============================================================
-   MODAL
-============================================================ */
-.overlay{
-  position:fixed; inset:0; background:rgba(4,8,13,.75); backdrop-filter:blur(3px);
-  display:none; align-items:flex-start; justify-content:center; z-index:100; padding:26px 16px; overflow-y:auto;
-}
-.overlay.active{ display:flex; }
-.modal{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); width:100%; max-width:520px; padding:0; position:relative; animation:modalIn .25s var(--ease); box-shadow:var(--shadow-md); }
-@keyframes modalIn{ from{ opacity:0; transform:translateY(16px) scale(.97); } to{ opacity:1; transform:none; } }
-
-.modal-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line); }
-.modal-head h3{ font-size:14.5px; }
-.modal-close{ background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; line-height:1; }
-.modal-body{ padding:18px; }
-.modal-foot{ padding:14px 18px; border-top:1px solid var(--line); display:flex; gap:10px; flex-wrap:wrap; }
-
-.detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin-bottom:14px; }
-.detail-grid .d{ font-size:12.5px; }
-.detail-grid .d .k{ color:var(--ink-faint); font-size:10.5px; display:block; margin-bottom:2px; }
-.detail-grid .d .v{ font-weight:600; }
-
-.toast{
-  position:fixed; bottom:22px; left:22px; z-index:200;
-  background:var(--panel); border:1px solid var(--ok); color:var(--ink); padding:12px 18px; font-size:13.5px; font-weight:700;
-  border-radius:10px; display:none; align-items:center; gap:10px;
-  box-shadow:var(--shadow-md);
-}
-.toast::before{ content:'✓'; width:20px; height:20px; border-radius:50%; background:var(--ok-soft); color:var(--ok); display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
-.toast.show{ display:flex; animation:toastin .3s var(--ease); }
-@keyframes toastin{ 0%{opacity:0; transform:translateY(14px);} 100%{opacity:1; transform:translateY(0);} }
-
-footer{ text-align:center; color:var(--ink-faint); font-size:10.5px; font-family:var(--font-m); margin-top:40px; padding:0 18px; }
-
-@media (prefers-reduced-motion: reduce){
-  *{ animation:none !important; transition:none !important; }
-}
-</style>
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; padding: 10px; }
+            .brand-text, .nav-item span, .nav-label, .sidebar-footer, .sidebar-close-btn { display: none; }
+            .main-content { margin-right: 80px; width: calc(100% - 80px); }
+            .stats-grid, .cost-stats-summary { grid-template-columns: repeat(2, 1fr); }
+            .clients-grid { grid-template-columns: repeat(2, 1fr); }
+            .order-layout { grid-template-columns: 1fr; }
+            .cost-sheet-card { position: static; }
+        }
+        @media (max-width: 640px) {
+            .sidebar { transform: translateX(100%); width: 260px; padding: 20px; }
+            .sidebar.open { transform: translateX(0); }
+            .brand-text, .nav-item span, .nav-label, .sidebar-footer, .sidebar-close-btn { display: initial; }
+            .sidebar.open .sidebar-close-btn{ display:flex; }
+            .main-content { margin-right: 0; width: 100%; }
+            .menu-btn { display: inline-flex; align-items:center; justify-content:center; }
+            .stats-grid, .cost-stats-summary { grid-template-columns: repeat(2, 1fr); }
+            .clients-grid { grid-template-columns: 1fr; }
+            .content-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            .item-input-box { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="top-inner">
-    <div class="brand">
-      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6"><path d="M4 20 L12 4 L20 20 Z"/></svg></div>
-      <div class="brand-text">
-        <h1>PRISM<span style="background:linear-gradient(90deg, var(--accent), var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent;">OPS</span></h1>
-        <p>AI DATA COLLECTION ENGINE</p>
-      </div>
+    <div class="sidebar-overlay-bg" id="sidebarOverlayBg" onclick="closeSidebar()"></div>
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="logo-box"><i data-lucide="hammer"></i></div>
+                <div class="brand-text">
+                    <h2>PRISMOPS</h2>
+                    <span>ورشة • تصنيع • حديد</span>
+                </div>
+                <button class="sidebar-close-btn" onclick="closeSidebar()"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-label">القائمة الرئيسية</span>
+                <nav class="nav-menu">
+                    <div class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
+                        <i data-lucide="layout-dashboard"></i><span>لوحة التحكم</span>
+                    </div>
+                    <div class="nav-item" data-view="new-order" onclick="switchView('new-order', this)">
+                        <i data-lucide="plus-square"></i><span>أوردر جديد</span>
+                    </div>
+                    <div class="nav-item" data-view="orders-list" onclick="switchView('orders-list', this)">
+                        <i data-lucide="box"></i><span>الأوردرات</span>
+                    </div>
+                    <div class="nav-item" data-view="clients" onclick="switchView('clients', this)">
+                        <i data-lucide="users"></i><span>العملاء</span>
+                    </div>
+                    <div class="nav-item" data-view="costs" onclick="switchView('costs', this)">
+                        <i data-lucide="calculator"></i><span>التكاليف</span>
+                    </div>
+                    <div class="nav-item" onclick="exportData()">
+                        <i data-lucide="download"></i><span>تصدير Excel</span>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="status-badge" onclick="editProfile()">
+                    <span class="dot"></span>
+                    <div>
+                        <strong>الورشة متصلة</strong>
+                        <div style="font-size: 10px; color: var(--text-muted);" id="sidebarDateLabel">—</div>
+                    </div>
+                </div>
+                <div class="version">بياناتك محفوظة على جهازك <i data-lucide="hard-drive" style="width:14px;"></i></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="user-profile" onclick="editProfile()">
+                    <button class="menu-btn" onclick="openSidebar(); event.stopPropagation();"><i data-lucide="menu" style="width:18px;"></i></button>
+                    <div class="avatar" id="avatarInitial">م</div>
+                    <div class="user-info">
+                        <strong id="profileName">مدير الورشة</strong>
+                        <span id="profileRole">اضغط للتعديل</span>
+                    </div>
+                </div>
+                <div class="page-title">
+                    <div>
+                        <h1 id="header-title">لوحة التحكم</h1>
+                        <span id="header-subtitle">نظام إدارة ورشة التصنيع</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="hazard-bar"></div>
+
+            <!-- Dashboard -->
+            <div id="view-dashboard" class="view-page active">
+                <div class="hero-banner">
+                    <div class="hero-text">
+                        <span class="shift-tag" id="heroDateTag">•</span>
+                        <h2>مرحباً، جاهزين للشغل؟</h2>
+                        <p id="heroSummary">مفيش أوردرات لسه</p>
+                    </div>
+                    <button class="btn-primary" onclick="switchView('new-order', document.querySelector('.nav-item[data-view=new-order]'))">
+                        <i data-lucide="plus-circle"></i> أوردر جديد
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card border-yellow">
+                        <div class="stat-header"><span class="badge" id="trendTotal">—</span><i data-lucide="box" style="color:var(--text-muted);"></i></div>
+                        <div class="stat-body"><h3 id="kpiTotal">0</h3><span>إجمالي الأوردرات</span><small>مقارنة بالأسبوع الماضي</small></div>
+                    </div>
+                    <div class="stat-card border-orange">
+                        <div class="stat-header"><span class="badge" id="trendActive">—</span><i data-lucide="sun" style="color:var(--text-muted);"></i></div>
+                        <div class="stat-body"><h3 id="kpiActive">0</h3><span>قيد التنفيذ</span><small>مقارنة بالأسبوع الماضي</small></div>
+                    </div>
+                    <div class="stat-card border-red">
+                        <div class="stat-header"><span class="badge" id="trendLate">—</span><i data-lucide="alert-triangle" style="color:var(--red);"></i></div>
+                        <div class="stat-body"><h3 style="color:var(--red);" id="kpiLate">0</h3><span>متأخرة</span><small>مقارنة بالأسبوع الماضي</small></div>
+                    </div>
+                    <div class="stat-card border-green">
+                        <div class="stat-header"><span class="badge" id="trendDelivered">—</span><i data-lucide="check-circle" style="color:var(--green);"></i></div>
+                        <div class="stat-body"><h3 id="kpiDelivered">0</h3><span>تم التسليم</span><small>مقارنة بالأسبوع الماضي</small></div>
+                    </div>
+                    <div class="stat-card border-blue">
+                        <div class="stat-header"><span class="badge" id="trendClients">—</span><i data-lucide="users" style="color:var(--text-muted);"></i></div>
+                        <div class="stat-body"><h3 id="kpiClients">0</h3><span>عدد العملاء</span><small>مقارنة بالأسبوع الماضي</small></div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="section-box">
+                        <div class="section-header">
+                            <h3>أحدث الأوردرات</h3>
+                            <span style="color:var(--accent-yellow); cursor:pointer; font-size:12px;" onclick="switchView('orders-list', document.querySelector('.nav-item[data-view=orders-list]'))">عرض الكل ←</span>
+                        </div>
+                        <div class="table-scroll">
+                        <table class="data-table">
+                            <thead><tr><th>الكود</th><th>الشغلانة</th><th>العميل</th><th>الحالة</th><th>التسليم</th><th>القيمة</th></tr></thead>
+                            <tbody id="dashboard-orders-tbody"></tbody>
+                        </table>
+                        </div>
+                    </div>
+                    <div class="section-box">
+                        <div class="section-header">
+                            <h3>تنبيهات التأخير</h3>
+                            <span style="background:#3d1414; color:var(--red); font-size:11px; padding:2px 8px; border-radius:4px;" id="alertCountBadge">0 تنبيه</span>
+                        </div>
+                        <div class="alerts-list" id="alertsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients -->
+            <div id="view-clients" class="view-page">
+                <div id="clientsGridView">
+                    <div class="search-bar-box">
+                        <span style="font-size: 13px; color: var(--text-muted); margin-inline-end:auto;"><strong style="color:var(--accent-yellow);" id="clients-count-label">0</strong> عميل</span>
+                        <div style="position: relative; flex:1; max-width:450px;">
+                            <input type="text" id="client-search-input" class="search-input" placeholder="بحث بالاسم أو الموبايل..." oninput="renderClients()">
+                            <i data-lucide="search" class="search-icon"></i>
+                        </div>
+                    </div>
+                    <div class="clients-grid" id="clients-grid-container"></div>
+                </div>
+
+                <div id="clientDetailView" style="display:none;">
+                    <button class="back-link" onclick="showClientsGrid()">→ رجوع لكل العملاء</button>
+                    <div class="section-box" style="margin-bottom:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
+                            <div>
+                                <h2 id="cd_name">—</h2>
+                                <div style="color:var(--text-muted); font-size:12px; margin-top:6px;" id="cd_phone">—</div>
+                            </div>
+                            <button class="btn-edit" onclick="editClientContact()"><i data-lucide="edit-3" style="width:14px;"></i> بيانات التواصل</button>
+                        </div>
+                        <div class="client-stats-box" style="grid-template-columns:repeat(4,1fr); margin-top:16px;">
+                            <div class="client-stat-subcard"><span>أوردرات</span><strong id="cd_totalOrders">0</strong></div>
+                            <div class="client-stat-subcard"><span>إجمالي الوزن</span><strong id="cd_totalWeight">0</strong></div>
+                            <div class="client-stat-subcard"><span>الالتزام بالمواعيد</span><strong style="color:var(--green);" id="cd_onTime">0%</strong></div>
+                            <div class="client-stat-subcard"><span>أرباح متوقعة</span><strong style="color:var(--green);" id="cd_profit">0</strong></div>
+                        </div>
+                    </div>
+                    <div class="section-box">
+                        <h3 style="margin-bottom:12px;">سجل أوردرات العميل</h3>
+                        <div class="table-scroll">
+                        <table class="data-table">
+                            <thead><tr><th>الشغلانة</th><th>الوزن</th><th>المهندس المنفذ</th><th>المرحلة</th><th>التسليم</th><th>الحالة</th></tr></thead>
+                            <tbody id="cd_table_body"></tbody>
+                        </table>
+                        </div>
+                    </div>
+                    <div class="section-box" style="margin-top:16px;">
+                        <h3 style="margin-bottom:10px;">ملاحظات عن العميل</h3>
+                        <textarea id="cd_notes" class="form-control" style="min-height:80px;" placeholder="أي ملاحظات خاصة بالعميل ده..."></textarea>
+                        <button class="btn-edit" style="margin-top:10px;" onclick="saveClientNotes()"><i data-lucide="save" style="width:14px;"></i> حفظ الملاحظات</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Costs -->
+            <div id="view-costs" class="view-page">
+                <div class="costs-header-bar">
+                    <p style="color:var(--text-muted); font-size:12px;">أسعار الخامات وتحليل تكلفة كل أوردر</p>
+                </div>
+
+                <div class="costs-tabs-box">
+                    <div class="cost-tab active" id="tab-btn-materials" onclick="switchCostTab('materials')"><i data-lucide="layers" style="width:16px;"></i> أسعار الخامات</div>
+                    <div class="cost-tab" id="tab-btn-orders" onclick="switchCostTab('orders')"><i data-lucide="banknote" style="width:16px;"></i> تكلفة الأوردرات</div>
+                </div>
+
+                <div id="cost-subtab-materials">
+                    <div class="notice-banner">
+                        <div>
+                            <div class="notice-title">لوحة أسعار الورشة</div>
+                            <div class="notice-sub">حدّث سعر الكيلو والكثافة لكل خامة – بيتحفظ فورًا ويتستخدم تلقائيًا في حساب الأوردرات الجديدة</div>
+                        </div>
+                        <i data-lucide="shield-alert" style="color:var(--accent-yellow);"></i>
+                    </div>
+                    <div class="section-box">
+                        <div class="table-scroll">
+                        <table class="data-table">
+                            <thead><tr><th>الخامة</th><th>الكثافة (جم/سم³)</th><th>السعر (ج.م/كجم)</th><th>آخر تحديث</th><th>إجراء</th></tr></thead>
+                            <tbody id="material-prices-tbody"></tbody>
+                        </table>
+                        </div>
+                        <div class="add-material-row">
+                            <input type="text" id="newMaterialName" placeholder="اسم خامة جديدة (مثال: صاج مقصدر)">
+                            <input type="number" id="newMaterialPrice" placeholder="السعر ج.م/كجم" style="width:140px;">
+                            <input type="number" id="newMaterialDensity" placeholder="الكثافة" value="7.85" step="0.01" style="width:110px;">
+                            <button class="btn-primary" onclick="addCustomMaterial()"><i data-lucide="plus"></i> ضيف خامة</button>
+                        </div>
+                    </div>
+
+                    <div class="section-box" style="margin-top:18px;">
+                        <h3 style="margin-bottom:14px;">إعدادات التكلفة العامة</h3>
+                        <div class="form-grid">
+                            <div class="form-group"><label>أجر يوم العامل الواحد (ج.م)</label><input type="number" id="pr_wage" class="form-control" onchange="savePricingGeneral()"></div>
+                            <div class="form-group"><label>نسبة مصاريف تشغيل إضافية (%)</label><input type="number" id="pr_overhead" class="form-control" onchange="savePricingGeneral()"></div>
+                        </div>
+                        <h3 style="margin:18px 0 10px;">أسعار التشطيب (ج.م/كجم)</h3>
+                        <div class="form-grid" id="finishRatesGrid"></div>
+                    </div>
+                </div>
+
+                <div id="cost-subtab-orders" style="display:none;">
+                    <div class="cost-stats-summary">
+                        <div class="summary-box"><span>خامات</span><strong id="sumMaterial">0 ج.م</strong></div>
+                        <div class="summary-box"><span>عمالة</span><strong id="sumLabor">0 ج.م</strong></div>
+                        <div class="summary-box"><span>تشطيب</span><strong id="sumFinish">0 ج.م</strong></div>
+                        <div class="summary-box"><span>مصاريف</span><strong id="sumOverhead">0 ج.م</strong></div>
+                        <div class="summary-box" style="border-color: rgba(16, 185, 129, 0.4);"><span>أرباح</span><strong style="color:var(--green);" id="sumProfit">0 ج.م</strong></div>
+                    </div>
+                    <div class="section-box">
+                        <div class="table-scroll">
+                        <table class="data-table">
+                            <thead><tr><th>الكود</th><th>الشغلانة</th><th>خامة</th><th>عمالة</th><th>تشطيب</th><th>مصاريف</th><th>إجمالي التكلفة</th><th>سعر البيع</th><th>الربح</th></tr></thead>
+                            <tbody id="orders-cost-tbody"></tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Order -->
+            <div id="view-new-order" class="view-page">
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">تسجيل شغلانة من الاستلام مع حساب التكلفة لحظياً</p>
+                <div class="order-layout">
+                    <div class="cost-sheet-card">
+                        <div class="cost-sheet-header">
+                            <div><div class="cost-sheet-title">معاينة التكلفة الحية</div><div class="cost-sheet-subtitle">LIVE COST SHEET</div></div>
+                            <i data-lucide="calculator" style="color:var(--accent-yellow);"></i>
+                        </div>
+                        <div class="cost-sheet-body">
+                            <div class="cost-row"><span>خامات</span><strong id="cost-materials">0 ج.م</strong></div>
+                            <div class="cost-row"><span>عمالة</span><strong id="cost-labor">0 ج.م</strong></div>
+                            <div class="cost-row"><span>تشطيب</span><strong id="cost-finish">0 ج.م</strong></div>
+                            <div class="cost-row"><span>مصاريف</span><strong id="cost-overhead">0 ج.م</strong></div>
+                            <div class="cost-divider"></div>
+                            <div class="cost-row"><span style="color:#fff;">إجمالي التكلفة</span><strong id="cost-total" style="font-size:16px; color:#fff;">0 ج.م</strong></div>
+                            <div class="cost-row"><span style="color:var(--accent-yellow);">سعر البيع</span><strong id="cost-sell" style="font-size:16px; color:var(--accent-yellow);">0 ج.م</strong></div>
+                            <div class="cost-row"><span style="color:var(--green);">الربح المتوقع</span><strong id="cost-profit" style="font-size:16px; color:var(--green);">0 ج.م</strong></div>
+                            <div class="profit-margin-box"><div class="margin-label">هامش الربح</div><div class="margin-value" id="cost-margin">0.0%</div></div>
+                            <div class="weight-footer" id="cost-weight">وزن إجمالي: 0.0 كجم</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="form-section-card">
+                            <div class="step-header"><div class="step-title"><i data-lucide="user" style="color:var(--accent-yellow);"></i><span>بيانات العميل</span></div><span class="step-number">01</span></div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>اسم العميل <span>*</span></label><input type="text" id="client-name" class="form-control" list="clientNamesList" placeholder="اكتب اسم العميل"></div>
+                                <datalist id="clientNamesList"></datalist>
+                                <div class="form-group"><label>الموبايل</label><input type="tel" id="client-phone" class="form-control" placeholder="01xxxxxxxxx"></div>
+                                <div class="form-group"><label>مهندس العميل</label><input type="text" id="client-engineer" class="form-control" placeholder="اسم مهندس العميل"></div>
+                                <div class="form-group"><label>المهندس المنفذ</label><input type="text" id="exec-engineer" class="form-control" list="engineerNamesList" placeholder="اسم المهندس المنفذ"></div>
+                                <datalist id="engineerNamesList"></datalist>
+                            </div>
+                        </div>
+
+                        <div class="form-section-card">
+                            <div class="step-header"><div class="step-title"><i data-lucide="wrench" style="color:var(--accent-yellow);"></i><span>بيانات الشغلانة</span></div><span class="step-number">02</span></div>
+                            <div class="form-grid">
+                                <div class="form-group full"><label>اسم الشغلانة <span>*</span></label><input type="text" id="job-name" class="form-control" placeholder="مثال: بوابة رئيسية – كمبوند النرجس"></div>
+                                <div class="form-group full"><label>نوع المنتج</label><input type="text" id="product-type" class="form-control" placeholder="مثال: بوابة، استاند، رف مخزن، سلم..."></div>
+                                <div class="form-group full">
+                                    <label>دهان / تشطيب — على الشغلانة كلها (اختيار واحد)</label>
+                                    <div class="chip-options" id="finish-chips"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section-card">
+                            <div class="step-header"><div class="step-title"><i data-lucide="layers" style="color:var(--accent-yellow);"></i><span>الخامات المسجلة</span></div><span class="step-number">03</span></div>
+
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label>نوع الخام</label>
+                                <div class="chip-options" id="ironTypeChips"></div>
+                            </div>
+
+                            <div class="form-group" id="sheetTypeField" style="display:none; margin-bottom:12px;">
+                                <label>نوع الصاج</label>
+                                <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                                    <input type="text" id="f_customSheetType" class="form-control" style="flex:1; min-width:180px;" placeholder="مش لاقي النوع؟ اكتبه هنا وضيفه">
+                                    <button type="button" class="btn-edit" onclick="addCustomSheetType()">➕ ضيف</button>
+                                </div>
+                                <div class="chip-options" id="sheetTypeChips"></div>
+                            </div>
+
+                            <div class="item-input-box">
+                                <div class="form-group"><label id="lbl_f_length">الطول (مم)</label><input type="number" id="f_length" class="form-control" oninput="updateWeightReadout()"></div>
+                                <div class="form-group"><label id="lbl_f_width">العرض (مم)</label><input type="number" id="f_width" class="form-control" oninput="updateWeightReadout()"></div>
+                                <div class="form-group"><label id="lbl_f_thickness">السمك (مم)</label><input type="number" id="f_thickness" class="form-control" oninput="updateWeightReadout()"></div>
+                                <div class="form-group"><label>عدد القطع</label><input type="number" id="f_pieceCount" class="form-control" value="1" oninput="updateWeightReadout()"></div>
+                                <div class="calc-weight-box"><span>وزن محسوب</span><strong id="temp-weight-val">0 كجم</strong></div>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <button class="btn-primary" onclick="addMaterialItem()"><i data-lucide="plus"></i> إضافة للقائمة</button>
+                            </div>
+                            <div class="registered-items-list" id="materials-list"></div>
+                        </div>
+
+                        <div class="form-section-card">
+                            <div class="step-header"><div class="step-title"><i data-lucide="calendar" style="color:var(--accent-yellow);"></i><span>بيانات التنفيذ</span></div><span class="step-number">04</span></div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>عدد العمال</label><input type="number" id="workers-count" class="form-control" value="1" oninput="recalculateAll()"></div>
+                                <div class="form-group"><label>تاريخ الاستلام</label><input type="date" id="date-receive" class="form-control" onchange="recalculateAll()"></div>
+                                <div class="form-group"><label>تاريخ التسليم المتوقع</label><input type="date" id="date-deliver" class="form-control" onchange="recalculateAll()"></div>
+                                <div class="form-group full"><label>سعر البيع (اختياري — لو فاضي هنقترح سعر تلقائي)</label><input type="number" id="manual-sell-price" class="form-control" placeholder="مقترح تلقائي حسب التكلفة" oninput="recalculateAll()"></div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="switchView('dashboard', document.querySelector('.nav-item[data-view=dashboard]'))">إلغاء</button>
+                            <button class="btn-accent" onclick="saveOrder()"><i data-lucide="save" style="display:inline; width:18px; vertical-align:middle;"></i> حفظ الأوردر</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div id="view-orders-list" class="view-page">
+                <div class="search-bar-box" style="justify-content:space-between;">
+                    <div class="costs-tabs-box" style="margin:0; max-width:520px;" id="orderFilterSet">
+                        <div class="cost-tab active" data-f="all">الكل</div>
+                        <div class="cost-tab" data-f="late">متأخرة</div>
+                        <div class="cost-tab" data-f="urgent">عاجلة</div>
+                        <div class="cost-tab" data-f="pending">جاري التنفيذ</div>
+                        <div class="cost-tab" data-f="delivered">تم التسليم</div>
+                    </div>
+                    <div style="position: relative; flex:1; max-width:320px;">
+                        <input type="text" id="orderSearch" class="search-input" placeholder="دور باسم العميل أو الشغلانة..." oninput="renderOrdersList()">
+                        <i data-lucide="search" class="search-icon"></i>
+                    </div>
+                </div>
+                <div class="section-box">
+                    <div class="section-header">
+                        <h2 style="font-size:16px;">جميع الأوردرات المسجلة في الورشة</h2>
+                        <button class="btn-primary" onclick="switchView('new-order', document.querySelector('.nav-item[data-view=new-order]'))">+ أوردر جديد</button>
+                    </div>
+                    <div class="table-scroll">
+                    <table class="data-table">
+                        <thead><tr><th>كود الأوردر</th><th>اسم الشغلانة</th><th>العميل</th><th>المهندس المنفذ</th><th>الحالة / المرحلة</th><th>تاريخ التسليم</th><th>الإجمالي</th></tr></thead>
+                        <tbody id="all-orders-tbody"></tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-    <div class="top-status"><span class="dot-live"></span><span id="clockDate">--</span></div>
-  </div>
-  <nav class="tabs">
-    <button class="tab-btn active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>لوحة التحكم</button>
-    <button class="tab-btn" data-view="new-order"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>أوردر جديد</button>
-    <button class="tab-btn" data-view="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>الأوردرات</button>
-    <button class="tab-btn" data-view="clients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15 20c.3-2.7 2-4.6 4.5-5"/></svg>العملاء</button>
-    <button class="tab-btn" data-view="costs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M9.5 9.3c0-1.3 1.1-2.1 2.5-2.1s2.5.8 2.5 1.9c0 2.6-5 1.4-5 4 0 1.1 1.1 1.9 2.5 1.9s2.5-.8 2.5-2.1"/></svg>التكاليف</button>
-    <button class="tab-btn" data-view="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>تصدير</button>
-  </nav>
-</header>
 
-<main>
-
-  <!-- ============ DASHBOARD ============ -->
-  <section class="view active" id="view-dashboard">
-    <div class="kpi-row">
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100">
-            <circle class="gauge-track" cx="50" cy="50" r="42"/>
-            <circle class="gauge-fill" id="gauge_total" cx="50" cy="50" r="42" style="stroke:var(--accent); filter:drop-shadow(0 0 5px var(--accent-glow));"/>
-          </svg>
-          <span class="gauge-num mono" id="kpiTotal">0</span>
+    <!-- Order Detail Modal -->
+    <div class="overlay" id="orderModalOverlay">
+        <div class="modal">
+            <div class="modal-head"><h3 id="om_title">تفاصيل الأوردر</h3><button class="modal-close" onclick="closeModal('orderModalOverlay')">✕</button></div>
+            <div class="modal-body" id="om_body"></div>
+            <div class="modal-foot" id="om_foot"></div>
         </div>
-        <span class="lbl">إجمالي الأوردرات</span>
-        <span class="trend" id="trend_total"></span>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100">
-            <circle class="gauge-track" cx="50" cy="50" r="42"/>
-            <circle class="gauge-fill" id="gauge_active" cx="50" cy="50" r="42" style="stroke:var(--accent); filter:drop-shadow(0 0 5px var(--accent-glow));"/>
-          </svg>
-          <span class="gauge-num mono" id="kpiActive">0</span>
-        </div>
-        <span class="lbl">قيد التنفيذ</span>
-        <span class="trend" id="trend_active"></span>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100">
-            <circle class="gauge-track" cx="50" cy="50" r="42"/>
-            <circle class="gauge-fill" id="gauge_late" cx="50" cy="50" r="42" style="stroke:var(--bad); filter:drop-shadow(0 0 5px var(--bad-glow));"/>
-          </svg>
-          <span class="gauge-num mono" id="kpiLate">0</span>
-        </div>
-        <span class="lbl">متأخرة</span>
-        <span class="trend" id="trend_late"></span>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100">
-            <circle class="gauge-track" cx="50" cy="50" r="42"/>
-            <circle class="gauge-fill" id="gauge_delivered" cx="50" cy="50" r="42" style="stroke:var(--ok); filter:drop-shadow(0 0 5px var(--ok-glow));"/>
-          </svg>
-          <span class="gauge-num mono" id="kpiDelivered">0</span>
-        </div>
-        <span class="lbl">تم التسليم</span>
-        <span class="trend" id="trend_delivered"></span>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-wrap">
-          <svg viewBox="0 0 100 100">
-            <circle class="gauge-track" cx="50" cy="50" r="42"/>
-            <circle class="gauge-fill" id="gauge_clients" cx="50" cy="50" r="42" style="stroke:var(--accent-2); filter:drop-shadow(0 0 5px var(--accent-glow));"/>
-          </svg>
-          <span class="gauge-num mono" id="kpiClients">0</span>
-        </div>
-        <span class="lbl">عدد العملاء</span>
-        <span class="trend" id="trend_clients"></span>
-      </div>
     </div>
 
-    <div class="dash-grid">
-      <div class="panel-block spec-card">
-        <h3>📋 أحدث الأوردرات</h3>
-        <div id="recentList"><p class="empty-note">لسه مفيش أوردرات مسجلة.</p></div>
-      </div>
-      <div class="panel-block spec-card">
-        <h3>⚠️ تنبيهات التأخير</h3>
-        <div id="alertList"><p class="empty-note">مفيش تنبيهات دلوقتي.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ NEW ORDER ============ -->
-  <section class="view" id="view-new-order">
-    <form id="orderForm" class="form-wrap">
-
-      <div class="form-section spec-card full">
-        <div class="section-label">بيانات العميل</div>
-        <div class="row2">
-          <div class="field">
-            <label>👤 العميل <span class="req">*</span></label>
-            <input type="text" id="f_clientName" required placeholder="مثال: مصنع الأمل">
-          </div>
-          <div class="field">
-            <label>رقم الموبايل (اختياري)</label>
-            <input type="tel" id="f_clientPhone" placeholder="01xxxxxxxxx">
-          </div>
+    <!-- Deliver Modal -->
+    <div class="overlay" id="deliverModalOverlay">
+        <div class="modal">
+            <div class="modal-head"><h3>✅ تسليم الأوردر</h3><button class="modal-close" onclick="closeModal('deliverModalOverlay')">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:14px;"><label>تاريخ التسليم الفعلي</label><input type="date" id="dm_dateDelivered" class="form-control"></div>
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label>في مشاكل حصلت؟</label>
+                    <div class="chip-options" id="dm_issueChips">
+                        <div class="chip active" data-val="none">✅ لأ</div>
+                        <div class="chip" data-val="missing_material">خامة ناقصة</div>
+                        <div class="chip" data-val="worker_absence">غياب عمال</div>
+                        <div class="chip" data-val="client_modification">تعديل العميل</div>
+                    </div>
+                </div>
+                <div class="form-group"><label>ملاحظات (اختياري)</label><textarea id="dm_notes" class="form-control" style="min-height:70px;"></textarea></div>
+            </div>
+            <div class="modal-foot"><button class="btn-primary" onclick="confirmDeliver()">✅ تأكيد التسليم</button></div>
         </div>
-        <div class="field">
-          <label>🛠️ اسم الشغلانة <span class="req">*</span></label>
-          <input type="text" id="f_orderDesc" required placeholder="اسم أو وصف الشغلانة">
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label>📐 مهندس الشغلانة (بتاع العميل)</label>
-            <input type="text" id="f_clientEngineer" placeholder="اسم مهندس العميل المسؤول عن الشغلانة">
-          </div>
-          <div class="field">
-            <label>👷 المهندس المنفذ (عندك في المصنع)</label>
-            <input type="text" id="f_executingEngineer" placeholder="اسم المهندس اللي هيشرف على التنفيذ">
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section spec-card full" id="specBuilderCard">
-        <div class="section-label">المواصفات</div>
-
-        <div class="field">
-          <label>نوع الخام</label>
-          <div class="chip-group" id="spec_materialChips"></div>
-          <p id="noMaterialsNote" style="display:none; font-size:11.5px; color:var(--ink-faint); margin-top:6px;">
-            لسه مفيش أنواع خامات مضافة. ضيف نوع من تاب "التكاليف ⚙️ إعدادات التسعير".
-          </p>
-        </div>
-        <div class="field" style="display:flex; gap:8px; align-items:flex-end;">
-          <div style="flex:1;">
-            <label>➕ ضيف نوع خام جديد بسرعة</label>
-            <input type="text" id="quickMaterialName" placeholder="اسم الخام (مثال: نحاس أصفر)">
-          </div>
-          <div style="width:120px;">
-            <label>السعر / كيلو</label>
-            <input type="number" id="quickMaterialRate" min="0" step="0.5" placeholder="جنيه">
-          </div>
-          <button type="button" class="btn small ghost" id="quickAddMaterialBtn">إضافة</button>
-        </div>
-
-        <div class="row2" style="grid-template-columns:repeat(3,1fr);">
-          <div class="field">
-            <label>الطول (مم)</label>
-            <input type="number" id="spec_length" min="0" step="0.1">
-          </div>
-          <div class="field">
-            <label>العرض (مم)</label>
-            <input type="number" id="spec_width" min="0" step="0.1">
-          </div>
-          <div class="field">
-            <label>السُمك (مم)</label>
-            <input type="number" id="spec_thickness" min="0" step="0.1">
-          </div>
-        </div>
-
-        <div class="row2">
-          <div class="field">
-            <label>عدد القطع</label>
-            <input type="number" id="spec_pieceCount" min="0" step="1">
-          </div>
-          <div class="field">
-            <label>الوزن التقريبي (كيلو) — بيتحسب أوتوماتيك</label>
-            <input type="text" id="spec_weight" class="mono" readonly value="0" style="color:var(--accent); font-weight:700;">
-          </div>
-        </div>
-
-        <div class="field">
-          <label>فيه دهان / تشطيب؟</label>
-          <div class="chip-group" id="spec_finishChips">
-            <div class="chip sel" data-val="no">لأ</div>
-            <div class="chip" data-val="yes">أيوه</div>
-          </div>
-        </div>
-        <div class="field" id="spec_finishTypeField" style="display:none">
-          <label>نوع التشطيب</label>
-          <div class="chip-group" id="spec_finishTypeChips">
-            <div class="chip" data-val="primer">بطانة</div>
-            <div class="chip" data-val="duco">دوكو</div>
-            <div class="chip" data-val="lacquer">لاكيه</div>
-            <div class="chip" data-val="epoxy">إيبوكس</div>
-            <div class="chip" data-val="electrostatic">الكتروستاتيك</div>
-          </div>
-        </div>
-
-        <div class="cost-preview-box">
-          <div class="cp-row"><span>💰 تكلفة القطعة دي (حية)</span><span class="mono" id="cp_current">0</span></div>
-          <div class="cp-row"><span>تكلفة القطع اللي اتضافت</span><span class="mono" id="cp_added">0</span></div>
-          <div class="cp-row total"><span>الإجمالي التقديري للشغلانة</span><span class="mono" id="cp_total">0</span></div>
-        </div>
-
-        <button type="button" class="btn small" id="addSpecItemBtn">💾 حفظ وإضافة القطعة دي</button>
-
-        <div id="specItemsList" style="margin-top:16px;"></div>
-        <div id="specItemsTotals" class="spec-totals" style="display:none;"></div>
-      </div>
-
-      <div class="form-section spec-card full">
-        <div class="section-label">التنفيذ</div>
-        <div class="row2">
-          <div class="field">
-            <label>عدد العمال المخصصين</label>
-            <input type="number" id="f_workers" min="0" step="1">
-          </div>
-          <div class="field">
-            <label>تاريخ التسليم المطلوب</label>
-            <input type="date" id="f_dateRequired">
-          </div>
-        </div>
-        <p style="font-size:11.5px; color:var(--ink-faint);">📅 تاريخ الاستلام بيتسجل أوتوماتيك بمعاد حفظ الأوردر.</p>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn">💾 حفظ الأوردر</button>
-      </div>
-    </form>
-  </section>
-
-  <!-- ============ ORDERS LIST ============ -->
-  <section class="view" id="view-orders">
-    <div class="toolbar">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="orderSearch" placeholder="دور باسم العميل أو اسم الشغلانة...">
-      </div>
-      <div class="filter-set" id="orderFilterSet">
-        <button class="active" data-f="all">الكل</button>
-        <button data-f="late">متأخرة</button>
-        <button data-f="urgent">عاجلة</button>
-        <button data-f="pending">جاري التنفيذ</button>
-        <button data-f="delivered">تم التسليم</button>
-      </div>
-    </div>
-    <div id="ordersListWrap"><p class="empty-note">لسه مفيش أوردرات. روح لتاب "أوردر جديد" وسجّل أول أوردر.</p></div>
-  </section>
-
-  <!-- ============ CLIENTS (NEW) ============ -->
-  <section class="view" id="view-clients">
-
-    <div id="clientsGridView">
-      <div class="toolbar">
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" id="clientSearch" placeholder="دور باسم العميل...">
-        </div>
-      </div>
-      <div class="client-grid" id="clientGrid"><p class="empty-note">لسه مفيش عملاء. لما تسجل أوردر جديد هيظهر العميل هنا أوتوماتيك.</p></div>
     </div>
 
-    <div class="client-detail" id="clientDetailView">
-      <button class="back-btn" id="clientBackBtn">→ رجوع لكل العملاء</button>
-
-      <div class="detail-head spec-card">
-        <div>
-          <h2 id="cd_name">—</h2>
-          <div class="detail-contact" id="cd_phone">—</div>
+    <!-- Contact Modal -->
+    <div class="overlay" id="contactModalOverlay">
+        <div class="modal">
+            <div class="modal-head"><h3>بيانات التواصل</h3><button class="modal-close" onclick="closeModal('contactModalOverlay')">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:14px;"><label>رقم الموبايل</label><input type="tel" id="cm_phone" class="form-control"></div>
+                <div class="form-group"><label>العنوان (اختياري)</label><input type="text" id="cm_address" class="form-control"></div>
+            </div>
+            <div class="modal-foot"><button class="btn-primary" onclick="saveClientContact()">💾 حفظ</button></div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn small ghost" id="cd_editContact">✏️ بيانات التواصل</button>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="overlay" id="profileModalOverlay">
+        <div class="modal">
+            <div class="modal-head"><h3>بيانات المستخدم</h3><button class="modal-close" onclick="closeModal('profileModalOverlay')">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:14px;"><label>الاسم</label><input type="text" id="pf_name" class="form-control"></div>
+                <div class="form-group"><label>الصفة الوظيفية</label><input type="text" id="pf_role" class="form-control" placeholder="مثال: مدير الورشة"></div>
+            </div>
+            <div class="modal-foot"><button class="btn-primary" onclick="saveProfile()">💾 حفظ</button></div>
         </div>
-      </div>
-
-      <div class="detail-kpis">
-        <div class="kpi"><span class="num mono" id="cd_totalOrders">0</span><span class="lbl">إجمالي الأوردرات</span></div>
-        <div class="kpi"><span class="num mono" id="cd_totalWeight">0</span><span class="lbl">إجمالي الوزن (كجم)</span></div>
-        <div class="kpi"><span class="num mono" id="cd_onTime">0%</span><span class="lbl">نسبة الالتزام بالميعاد</span></div>
-        <div class="kpi"><span class="num mono" id="cd_pending">0</span><span class="lbl">أوردرات مفتوحة</span></div>
-        <div class="kpi"><span class="num mono" id="cd_totalCost">0</span><span class="lbl">إجمالي التكلفة (ج.م)</span></div>
-        <div class="kpi"><span class="num mono" id="cd_profit">—</span><span class="lbl">إجمالي الربح المتوقع</span></div>
-      </div>
-
-      <div class="panel-block spec-card" style="margin-top:16px;">
-        <h3>📜 سجل أوردرات العميل</h3>
-        <div class="table-wrap">
-          <table class="history-table" id="cd_table">
-            <thead><tr><th>الأوردر</th><th>الوزن</th><th>المهندس المنفذ</th><th>المرحلة</th><th>التسليم المطلوب</th><th>الحالة</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel-block spec-card notes-box" style="margin-top:16px;">
-        <h3>🗒️ ملاحظات عن العميل</h3>
-        <textarea id="cd_notes" placeholder="أي ملاحظات خاصة بالعميل ده..."></textarea>
-        <button class="btn small" id="cd_saveNotes" style="margin-top:10px;">💾 حفظ الملاحظات</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ COSTS (NEW) ============ -->
-  <section class="view" id="view-costs">
-
-    <div class="panel-block spec-card" style="margin-bottom:18px;">
-      <h3>⚙️ إعدادات التسعير</h3>
-
-      <div class="section-label" style="margin-top:6px;">أنواع الخامات وأسعارها (جنيه / كيلو)</div>
-      <div id="materialsManagerList" style="margin-bottom:10px;"></div>
-      <div class="row2" style="grid-template-columns:1fr 120px auto; align-items:flex-end; gap:10px;">
-        <div class="field" style="margin-bottom:0;">
-          <label>اسم الخام الجديد</label>
-          <input type="text" id="pr_newMaterialName" placeholder="مثال: صاج استانلس">
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label>السعر / كيلو</label>
-          <input type="number" min="0" step="0.5" id="pr_newMaterialRate" placeholder="جنيه">
-        </div>
-        <button type="button" class="btn small" id="pr_addMaterialBtn">➕ إضافة خامة</button>
-      </div>
-
-      <div class="section-label" style="margin-top:18px;">تكلفة العمالة والمصاريف</div>
-      <div class="row2" style="grid-template-columns:repeat(2,1fr); gap:12px;">
-        <div class="field"><label>أجر يوم العامل</label><input type="number" min="0" step="5" id="pr_wage"></div>
-        <div class="field"><label>نسبة مصاريف تشغيل إضافية %</label><input type="number" min="0" step="1" id="pr_overhead"></div>
-      </div>
-      <div class="section-label">تكلفة التشطيب للكيلو حسب النوع (جنيه)</div>
-      <div class="row2" style="grid-template-columns:repeat(3,1fr); gap:12px;">
-        <div class="field"><label>بطانة</label><input type="number" min="0" step="0.5" id="pr_finish_primer"></div>
-        <div class="field"><label>دوكو</label><input type="number" min="0" step="0.5" id="pr_finish_duco"></div>
-        <div class="field"><label>لاكيه</label><input type="number" min="0" step="0.5" id="pr_finish_lacquer"></div>
-        <div class="field"><label>إيبوكس</label><input type="number" min="0" step="0.5" id="pr_finish_epoxy"></div>
-        <div class="field"><label>الكتروستاتيك</label><input type="number" min="0" step="0.5" id="pr_finish_electrostatic"></div>
-      </div>
-      <button class="btn small" id="pr_save">💾 حفظ إعدادات التسعير</button>
     </div>
 
-    <div class="kpi-row" style="grid-template-columns:repeat(2,1fr);">
-      <div class="kpi"><span class="num mono" id="costTotalAll">0</span><span class="lbl">إجمالي تكلفة كل الأوردرات</span></div>
-      <div class="kpi"><span class="num mono" id="costAvg">0</span><span class="lbl">متوسط تكلفة الأوردر</span></div>
-      <div class="kpi"><span class="num mono" id="costProfit">0</span><span class="lbl">إجمالي الربح المتوقع</span></div>
-      <div class="kpi"><span class="num mono" id="costMargin">0%</span><span class="lbl">متوسط هامش الربح</span></div>
-    </div>
-
-    <div class="panel-block spec-card" style="margin-top:18px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-        <h3 style="margin:0;">📐 تكلفة كل أوردر</h3>
-        <button class="btn small ghost" id="exportCostsBtn">⬇️ تصدير CSV — التكاليف</button>
-      </div>
-      <div class="table-wrap">
-        <table class="history-table" id="costTable">
-          <thead><tr>
-            <th>الأوردر</th><th>العميل</th><th>خامة</th><th>عمالة</th><th>تشطيب</th><th>مصاريف</th><th>الإجمالي</th><th>سعر البيع</th><th>الربح</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ EXPORT ============ -->
-  <section class="view" id="view-export">
-    <div class="export-row spec-card">
-      <div>
-        <div class="ex-title">⬇️ تصدير الأوردرات</div>
-        <div class="ex-desc">صدّر كل الأوردرات بكل تفاصيلها كملف CSV — جاهز لـ Excel أو تدريب موديل.</div>
-      </div>
-      <button class="btn" id="exportOrdersBtn">تحميل CSV — الأوردرات</button>
-    </div>
-    <div class="export-row spec-card">
-      <div>
-        <div class="ex-title">⬇️ تصدير العملاء</div>
-        <div class="ex-desc">صدّر ملخص كل عميل: عدد الأوردرات، الوزن الكلي، ونسبة الالتزام بالمواعيد.</div>
-      </div>
-      <button class="btn" id="exportClientsBtn">تحميل CSV — العملاء</button>
-    </div>
-    <div class="export-row spec-card danger-zone">
-      <div>
-        <div class="ex-title" style="color:var(--bad)">🗑️ مسح كل البيانات</div>
-        <div class="ex-desc">هيمسح كل الأوردرات وبيانات العملاء نهائيًا. الإجراء ده مش هيترجع.</div>
-      </div>
-      <button class="btn danger" id="clearAllBtn">مسح كل البيانات</button>
-    </div>
-  </section>
-
-</main>
-
-<footer>PRISMOPS // AI DATA COLLECTION ENGINE // BUILT FOR STEEL FABRICATION</footer>
-
-<!-- ORDER DETAIL MODAL -->
-<div class="overlay" id="orderModalOverlay">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="om_title">تفاصيل الأوردر</h3>
-      <button class="modal-close" id="om_close">✕</button>
-    </div>
-    <div class="modal-body" id="om_body"></div>
-    <div class="modal-foot" id="om_foot"></div>
-  </div>
-</div>
-
-<!-- DELIVER MODAL -->
-<div class="overlay" id="deliverModalOverlay">
-  <div class="modal">
-    <div class="modal-head"><h3>✅ تسليم الأوردر</h3><button class="modal-close" id="dm_close">✕</button></div>
-    <div class="modal-body">
-      <div class="field"><label>تاريخ التسليم الفعلي</label><input type="date" id="dm_dateDelivered"></div>
-      <div class="field">
-        <label>في مشاكل حصلت؟</label>
-        <div class="chip-group" id="dm_issueChips">
-          <div class="chip sel" data-val="none">✅ لأ</div>
-          <div class="chip" data-val="missing_material">خامة ناقصة</div>
-          <div class="chip" data-val="worker_absence">غياب عمال</div>
-          <div class="chip" data-val="client_modification">تعديل العميل</div>
-        </div>
-      </div>
-      <div class="field"><label>ملاحظات (اختياري)</label><textarea id="dm_notes"></textarea></div>
-    </div>
-    <div class="modal-foot"><button class="btn" id="dm_confirm">✅ تأكيد التسليم</button></div>
-  </div>
-</div>
-
-<!-- CLIENT CONTACT MODAL -->
-<div class="overlay" id="contactModalOverlay">
-  <div class="modal">
-    <div class="modal-head"><h3>بيانات التواصل</h3><button class="modal-close" id="cm_close">✕</button></div>
-    <div class="modal-body">
-      <div class="field"><label>رقم الموبايل</label><input type="tel" id="cm_phone"></div>
-      <div class="field"><label>العنوان (اختياري)</label><input type="text" id="cm_address"></div>
-    </div>
-    <div class="modal-foot"><button class="btn" id="cm_save">💾 حفظ</button></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
-   PRISMOPS — DATA LAYER
+   PRISMOPS — DATA LAYER (all real, persisted to localStorage)
 ============================================================ */
-const LS_ORDERS = 'prismops_orders';
-const LS_CLIENTS = 'prismops_clients_meta';
+const LS_ORDERS = 'prismops2_orders';
+const LS_CLIENTS = 'prismops2_clients';
+const LS_PRICING = 'prismops2_pricing';
+const LS_PROFILE = 'prismops2_profile';
 
 let orders = JSON.parse(localStorage.getItem(LS_ORDERS) || '[]');
 let clientsMeta = JSON.parse(localStorage.getItem(LS_CLIENTS) || '{}');
+let profile = JSON.parse(localStorage.getItem(LS_PROFILE) || 'null') || { name: 'مدير الورشة', role: 'اضغط للتعديل' };
+
+const DEFAULT_SHEET_TYPES = ['حديد','استانلس','مجلفن','الومنيوم','نحاس'];
+const IRON_LABELS = { sheet:'صاج', boxes:'علب', zawya:'زوايا', pipes:'مواسير', kamar:'كمر' };
+const FINISH_LABELS = { powder:'دهان بودرة', oil:'دهان زيتي', galvanize:'جلفنة', polish:'تلميع استانلس', none:'بدون تشطيب' };
+const STAGES = ['استلام الطلب','تجهيز الخامة','قص وتشكيل','لحام','دهان وتشطيب','جاهز للتسليم'];
+
+const DEFAULT_PRICING = {
+  materials: {
+    'sheet:حديد':    { price: 42,  density: 7.85 },
+    'sheet:استانلس': { price: 145, density: 8.00 },
+    'sheet:مجلفن':   { price: 52,  density: 7.85 },
+    'sheet:الومنيوم':{ price: 95,  density: 2.70 },
+    'sheet:نحاس':    { price: 320, density: 8.96 },
+    'pipes':         { price: 48,  density: 7.85 },
+    'boxes':         { price: 44,  density: 7.85 },
+    'zawya':         { price: 42,  density: 7.85 },
+    'kamar':         { price: 46,  density: 7.85 }
+  },
+  dailyWage: 300,
+  finishRates: { powder: 8, oil: 6, galvanize: 12, polish: 15, none: 0 },
+  overheadPercent: 6
+};
+let pricing = JSON.parse(localStorage.getItem(LS_PRICING) || 'null');
+if(!pricing){ pricing = JSON.parse(JSON.stringify(DEFAULT_PRICING)); }
+pricing.materials = Object.assign({}, DEFAULT_PRICING.materials, pricing.materials||{});
+pricing.finishRates = Object.assign({}, DEFAULT_PRICING.finishRates, pricing.finishRates||{});
+if(typeof pricing.dailyWage!=='number') pricing.dailyWage = DEFAULT_PRICING.dailyWage;
+if(typeof pricing.overheadPercent!=='number') pricing.overheadPercent = DEFAULT_PRICING.overheadPercent;
 
 function saveOrders(){ localStorage.setItem(LS_ORDERS, JSON.stringify(orders)); }
 function saveClientsMeta(){ localStorage.setItem(LS_CLIENTS, JSON.stringify(clientsMeta)); }
-
-const LABELS = {
-  productType: { gate:'🚪 بوابة', stand:'🏗️ استاند', shelf:'📦 رف مخزن', ladder:'🪜 سلم', barrier:'🔩 حاجز', other:'⚙️ تاني' },
-  ironType: { square:'مربع', angle:'أنجل', pipes:'مواسير', sheet:'صاج', mix:'مكس', box:'علب', zawya:'زوي', pipe_beam:'مواسير كمر' },
-  welding: { simple:'🔥 بسيط', medium:'🔥🔥 متوسط', heavy:'🔥🔥🔥 كتير' },
-  finishType: { primer:'بطانة', duco:'دوكو', lacquer:'لاكيه', epoxy:'إيبوكس', electrostatic:'الكتروستاتيك' },
-  sheetSubtype: { iron:'حديد', stainless:'استانلس', galvanized:'مجلفن', aluminum:'الومنيوم', copper:'نحاس' },
-  issue: { none:'✅ لا يوجد', missing_material:'خامة ناقصة', worker_absence:'غياب عمال', client_modification:'تعديل العميل' }
-};
-function productLabel(o){
-  return LABELS.productType[o.productType] || o.productType || o.productTypeOther || '—';
-}
-
-/* ============================================================
-   PRODUCTION STAGES
-============================================================ */
-const STAGES = ['استلام الطلب','تجهيز الخامة','قص وتشكيل','لحام','دهان وتشطيب','جاهز للتسليم'];
-
-function stageIndex(o){ return (typeof o.stage==='number') ? o.stage : 0; }
-function stagePercent(o){
-  if(o.status==='delivered') return 100;
-  return Math.round((stageIndex(o))/(STAGES.length-1)*100);
-}
-function stageLabelText(o){
-  if(o.status==='delivered') return 'تم التسليم';
-  return STAGES[stageIndex(o)];
-}
-function renderStageTrack(o, clickable){
-  return `<div class="stage-track ${clickable?'':'locked'}">${STAGES.map((s,i)=>{
-    let cls = '';
-    if(o.status==='delivered' || i < stageIndex(o)) cls='done';
-    else if(i===stageIndex(o)) cls='current';
-    const click = (clickable && o.status!=='delivered') ? ` onclick="setOrderStage('${o.id}',${i})"` : '';
-    return `<div class="stage-step ${cls}"${click}>
-      <span class="line"></span>
-      <span class="circle">${cls==='done'?'✓':(i+1)}</span>
-      <span class="lbl">${s}</span>
-    </div>`;
-  }).join('')}</div>`;
-}
-function setOrderStage(id, idx){
-  const o = orders.find(x=>x.id===id);
-  if(!o || o.status==='delivered') return;
-  o.stage = idx;
-  saveOrders();
-  openOrderModal(id);
-  renderOrdersList(); renderDashboard();
-  toast('اتحدثت مرحلة التصنيع ✓');
-}
-
-/* ============================================================
-   MATERIALS — user-managed raw material types & prices
-============================================================ */
-const LS_MATERIALS = 'prismops_materials';
-let materials = JSON.parse(localStorage.getItem(LS_MATERIALS) || 'null');
-if(!materials){
-  materials = [
-    { id:'m_sheet', name:'صاج', rate:40 },
-    { id:'m_box', name:'علب', rate:38 },
-    { id:'m_zawya', name:'زوي', rate:42 },
-    { id:'m_pipe_beam', name:'مواسير كمر', rate:50 },
-    { id:'m_sheet_iron', name:'صاج حديد', rate:38 },
-    { id:'m_sheet_stainless', name:'صاج استانلس', rate:130 },
-    { id:'m_sheet_galvanized', name:'صاج مجلفن', rate:48 },
-    { id:'m_sheet_aluminum', name:'صاج الومنيوم', rate:95 },
-    { id:'m_sheet_copper', name:'صاج نحاس', rate:280 }
-  ];
-  localStorage.setItem(LS_MATERIALS, JSON.stringify(materials));
-}
-function saveMaterials(){ localStorage.setItem(LS_MATERIALS, JSON.stringify(materials)); }
-function addMaterial(name, rate){
-  name = (name||'').trim();
-  if(!name) return null;
-  const m = { id:'m_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), name, rate: parseFloat(rate)||0 };
-  materials.push(m);
-  saveMaterials();
-  return m;
-}
-function deleteMaterial(id){
-  if(!confirm('متأكد إنك عايز تمسح نوع الخام ده؟')) return;
-  materials = materials.filter(m=>m.id!==id);
-  saveMaterials();
-  renderMaterialsManagerList();
-  renderMaterialChips();
-}
-function renderMaterialsManagerList(){
-  const wrap = document.getElementById('materialsManagerList');
-  if(!wrap) return;
-  if(materials.length===0){ wrap.innerHTML = '<p class="spec-items-empty">لسه مفيش أنواع خامات مضافة.</p>'; return; }
-  wrap.innerHTML = materials.map(m=>`
-    <div class="material-row">
-      <span class="m-name">${esc(m.name)}</span>
-      <span class="m-rate">${m.rate} ج.م/كجم</span>
-      <button type="button" class="m-del" onclick="deleteMaterial('${m.id}')">✕</button>
-    </div>`).join('');
-}
-function renderMaterialChips(){
-  const wrap = document.getElementById('spec_materialChips');
-  const note = document.getElementById('noMaterialsNote');
-  if(!wrap) return;
-  if(materials.length===0){
-    wrap.innerHTML = '';
-    if(note) note.style.display='block';
-    return;
-  }
-  if(note) note.style.display='none';
-  wrap.innerHTML = materials.map(m=>`<div class="chip" data-val="${m.id}">${esc(m.name)}</div>`).join('');
-  wrap.querySelectorAll('.chip').forEach(chip=>{
-    chip.addEventListener('click', ()=>{
-      wrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
-      chip.classList.add('sel');
-      renderCostPreview();
-    });
-  });
-}
-
-document.getElementById('pr_addMaterialBtn').addEventListener('click', ()=>{
-  const name = document.getElementById('pr_newMaterialName').value.trim();
-  const rate = document.getElementById('pr_newMaterialRate').value;
-  if(!name){ toast('اكتب اسم الخامة'); return; }
-  addMaterial(name, rate);
-  document.getElementById('pr_newMaterialName').value='';
-  document.getElementById('pr_newMaterialRate').value='';
-  renderMaterialsManagerList();
-  renderMaterialChips();
-  toast('اتضافت الخامة ✓');
-});
-document.getElementById('quickAddMaterialBtn').addEventListener('click', ()=>{
-  const name = document.getElementById('quickMaterialName').value.trim();
-  const rate = document.getElementById('quickMaterialRate').value;
-  if(!name){ toast('اكتب اسم الخامة'); return; }
-  const m = addMaterial(name, rate);
-  document.getElementById('quickMaterialName').value='';
-  document.getElementById('quickMaterialRate').value='';
-  renderMaterialsManagerList();
-  renderMaterialChips();
-  if(m){
-    const chip = document.querySelector(`#spec_materialChips .chip[data-val="${m.id}"]`);
-    if(chip){ document.querySelectorAll('#spec_materialChips .chip').forEach(c=>c.classList.remove('sel')); chip.classList.add('sel'); renderCostPreview(); }
-  }
-  toast('اتضافت الخامة واتحطت ✓');
-});
-
-/* ============================================================
-   COSTING
-============================================================ */
-const LS_PRICING = 'prismops_pricing_settings';
-const DEFAULT_PRICING = {
-  dailyWage:300,
-  finishRates:{ primer:6, duco:10, lacquer:14, epoxy:18, electrostatic:22 },
-  overheadPercent:10
-};
-let pricing = Object.assign({}, DEFAULT_PRICING, JSON.parse(localStorage.getItem(LS_PRICING)||'{}'));
-pricing.finishRates = Object.assign({}, DEFAULT_PRICING.finishRates, pricing.finishRates||{});
 function savePricing(){ localStorage.setItem(LS_PRICING, JSON.stringify(pricing)); }
-
-function diffDays(d1,d2){
-  if(!d1||!d2) return 1;
-  const days = Math.round((new Date(d2)-new Date(d1))/86400000);
-  return Math.max(days,1);
+function saveProfile(){
+  profile.name = document.getElementById('pf_name').value.trim() || 'مدير الورشة';
+  profile.role = document.getElementById('pf_role').value.trim() || 'مدير الورشة';
+  localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+  applyProfile();
+  closeModal('profileModalOverlay');
+  toast('اتحفظت بياناتك ✓');
+}
+function applyProfile(){
+  document.getElementById('profileName').textContent = profile.name;
+  document.getElementById('profileRole').textContent = profile.role;
+  document.getElementById('avatarInitial').textContent = (profile.name||'م').trim().charAt(0);
+}
+function editProfile(){
+  document.getElementById('pf_name').value = profile.name;
+  document.getElementById('pf_role').value = profile.role;
+  openModal('profileModalOverlay');
 }
 
-function calcOrderCost(o){
-  const days = o.status==='delivered' ? diffDays(o.dateReceived,o.dateDelivered) : diffDays(o.dateReceived,o.dateRequired||o.dateReceived);
-  const labor = (o.workers||0) * days * pricing.dailyWage;
+/* sheet sub-types the user has added beyond the defaults, and any fully-custom top-level materials */
+function getSheetTypes(){
+  const custom = Object.keys(pricing.materials)
+    .filter(k=>k.startsWith('sheet:'))
+    .map(k=>k.slice(6))
+    .filter(name=>!DEFAULT_SHEET_TYPES.includes(name));
+  return DEFAULT_SHEET_TYPES.concat(custom);
+}
+function getCustomTopLevelMaterials(){
+  return Object.keys(pricing.materials).filter(k=>!k.startsWith('sheet:') && !IRON_LABELS[k]);
+}
+function materialKey(item){ return item.ironType==='sheet' ? `sheet:${item.sheetType}` : item.ironType; }
+function materialLabel(key){
+  if(key.startsWith('sheet:')) return `صاج (${key.slice(6)})`;
+  if(key.startsWith('custom:')) return key.slice(7).replace(/_/g,' ');
+  return IRON_LABELS[key] || key;
+}
+function getMaterialPrice(key){ return (pricing.materials[key]||{}).price || 0; }
+function getMaterialDensity(key){ return (pricing.materials[key]||{}).density || 7.85; }
 
-  let material=0, finish=0;
-  if(Array.isArray(o.items) && o.items.length){
-    o.items.forEach(it=>{
-      const rate = (it.rate!==undefined) ? it.rate : (materials.find(m=>m.id===it.materialId)||{}).rate || 0;
-      material += (it.weight||0) * rate;
-      if(it.finish==='yes'){
-        const fRate = (it.finishRate!==undefined) ? it.finishRate : (pricing.finishRates[it.finishType]||0);
-        finish += (it.weight||0) * fRate;
-      }
-    });
+/* ============================================================
+   WEIGHT FORMULAS (material-density aware)
+   flat materials: Weight(kg) = L(mm)×W(mm)×T(mm)×density(g/cm3)×0.000001×count
+   pipes (round tube): Weight(kg) = π×(OD-wall)×wall×Length(mm)×density×0.000001×count
+============================================================ */
+function computeWeight(ironType, length, widthOrOD, thicknessOrWall, count, density){
+  length=Number(length)||0; widthOrOD=Number(widthOrOD)||0; thicknessOrWall=Number(thicknessOrWall)||0; count=Number(count)||0;
+  let w;
+  if(ironType==='pipes'){
+    const od=widthOrOD, wall=thicknessOrWall;
+    w = Math.PI * (od-wall) * wall * length * density * 0.000001 * count;
   } else {
-    // legacy fallback for orders saved before the materials system existed
-    material = 0;
-    if(o.finish==='yes') finish = (o.weight||0) * 8;
+    w = length * widthOrOD * thicknessOrWall * density * 0.000001 * count;
   }
-
-  const subtotal = material+labor+finish;
-  const overhead = subtotal * (pricing.overheadPercent||0)/100;
-  const total = subtotal + overhead;
-  const sellingPrice = o.sellingPrice || 0;
-  const profit = sellingPrice ? (sellingPrice - total) : null;
-  const margin = (sellingPrice && sellingPrice>0) ? Math.round((profit/sellingPrice)*100) : null;
-  return { material, labor, finish, overhead, total, days, sellingPrice, profit, margin };
+  return Math.round(Math.max(w,0)*100)/100;
 }
-function money(n){ return Math.round(n).toLocaleString('en-US'); }
-
-function fillPricingForm(){
-  document.getElementById('pr_wage').value = pricing.dailyWage;
-  document.getElementById('pr_finish_primer').value = pricing.finishRates.primer;
-  document.getElementById('pr_finish_duco').value = pricing.finishRates.duco;
-  document.getElementById('pr_finish_lacquer').value = pricing.finishRates.lacquer;
-  document.getElementById('pr_finish_epoxy').value = pricing.finishRates.epoxy;
-  document.getElementById('pr_finish_electrostatic').value = pricing.finishRates.electrostatic;
-  document.getElementById('pr_overhead').value = pricing.overheadPercent;
-  renderMaterialsManagerList();
-}
-document.getElementById('pr_save').addEventListener('click', ()=>{
-  pricing.dailyWage = parseFloat(document.getElementById('pr_wage').value)||0;
-  pricing.finishRates.primer = parseFloat(document.getElementById('pr_finish_primer').value)||0;
-  pricing.finishRates.duco = parseFloat(document.getElementById('pr_finish_duco').value)||0;
-  pricing.finishRates.lacquer = parseFloat(document.getElementById('pr_finish_lacquer').value)||0;
-  pricing.finishRates.epoxy = parseFloat(document.getElementById('pr_finish_epoxy').value)||0;
-  pricing.finishRates.electrostatic = parseFloat(document.getElementById('pr_finish_electrostatic').value)||0;
-  pricing.overheadPercent = parseFloat(document.getElementById('pr_overhead').value)||0;
-  savePricing();
-  renderCosts();
-  toast('اتحفظت إعدادات التسعير ✓');
-});
-
-function renderCosts(){
-  fillPricingForm();
-  if(orders.length===0){
-    document.getElementById('costTotalAll').textContent='0';
-    document.getElementById('costAvg').textContent='0';
-    document.getElementById('costProfit').textContent='0';
-    document.getElementById('costMargin').textContent='0%';
-    document.querySelector('#costTable tbody').innerHTML = `<tr><td colspan="9" class="empty-note">لسه مفيش أوردرات لحساب تكلفتها.</td></tr>`;
-    return;
-  }
-  let totalAll=0, profitSum=0, profitCount=0, marginSum=0, marginCount=0;
-  const rows = orders.map(o=>{
-    const c = calcOrderCost(o);
-    totalAll += c.total;
-    if(c.profit!==null){ profitSum+=c.profit; profitCount++; }
-    if(c.margin!==null){ marginSum+=c.margin; marginCount++; }
-    const label = productLabel(o);
-    const profitCls = c.profit===null ? '' : (c.profit>=0 ? 'profit-pos':'profit-neg');
-    return `<tr>
-      <td>${label}<br><span class="mono" style="color:var(--ink-faint);font-size:10px;">#${o.id}</span></td>
-      <td>${esc(o.clientName)}</td>
-      <td class="mono">${money(c.material)}</td>
-      <td class="mono">${money(c.labor)}</td>
-      <td class="mono">${money(c.finish)}</td>
-      <td class="mono">${money(c.overhead)}</td>
-      <td class="mono" style="color:var(--accent); font-weight:700;">${money(c.total)}</td>
-      <td><input type="number" class="price-input" min="0" step="10" value="${o.sellingPrice||''}" placeholder="—" onchange="setSellingPrice('${o.id}', this.value)"></td>
-      <td class="mono ${profitCls}">${c.profit===null?'—':money(c.profit)+(c.margin!==null?' ('+c.margin+'%)':'')}</td>
-    </tr>`;
-  }).join('');
-  document.querySelector('#costTable tbody').innerHTML = rows;
-
-  document.getElementById('costTotalAll').textContent = money(totalAll);
-  document.getElementById('costAvg').textContent = money(totalAll/orders.length);
-  animateNumber(document.getElementById('costProfit'), profitCount ? profitSum : 0);
-  if(!profitCount) document.getElementById('costProfit').textContent = '—';
-  document.getElementById('costMargin').textContent = marginCount ? Math.round(marginSum/marginCount)+'%' : '—';
-}
-
-function setSellingPrice(id, val){
-  const o = orders.find(x=>x.id===id);
-  if(!o) return;
-  o.sellingPrice = parseFloat(val) || 0;
-  saveOrders();
-  renderCosts();
-}
-function saveOrderSellingPrice(id){
-  const o = orders.find(x=>x.id===id);
-  if(!o) return;
-  o.sellingPrice = parseFloat(document.getElementById('om_sellingPrice').value) || 0;
-  saveOrders();
-  openOrderModal(id);
-  toast('اتحفظ سعر البيع ✓');
-}
-
-document.getElementById('exportCostsBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','المنتج','خامة','عمالة','تشطيب','مصاريف تشغيل','إجمالي التكلفة','سعر البيع','الربح','هامش الربح %'];
-  const rows = [header, ...orders.map(o=>{
-    const c = calcOrderCost(o);
-    const label = productLabel(o);
-    return [o.id, o.clientName, label, Math.round(c.material), Math.round(c.labor), Math.round(c.finish), Math.round(c.overhead), Math.round(c.total), o.sellingPrice||'', c.profit===null?'':Math.round(c.profit), c.margin===null?'':c.margin];
-  })];
-  downloadCSV('prismops_costs.csv', rows);
-  toast('تم تحميل ملف التكاليف');
-});
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
-function fmtDate(d){ return d ? d : '—'; }
+function fmtDate(d){ return d || '—'; }
+function money(n){ return Math.round(n||0).toLocaleString('en-US') + ' ج.م'; }
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function diffDays(d1,d2){ if(!d1||!d2) return 1; const d=Math.round((new Date(d2)-new Date(d1))/86400000); return Math.max(d,1); }
 function isLate(o){ return o.status==='pending' && o.dateRequired && o.dateRequired < todayStr(); }
 function isUrgent(o){
   if(o.status!=='pending' || !o.dateRequired) return false;
-  const today = new Date(todayStr());
-  const due = new Date(o.dateRequired);
-  const diffDaysCount = Math.round((due-today)/86400000);
-  return diffDaysCount>=0 && diffDaysCount<=2;
+  const days = Math.round((new Date(o.dateRequired)-new Date(todayStr()))/86400000);
+  return days>=0 && days<=2;
 }
-function orderStatusInfo(o){
-  if(o.status==='delivered') return {cls:'ok', text:'تم التسليم'};
-  if(isLate(o)) return {cls:'bad', text:'متأخر'};
-  return {cls:'warn', text:'قيد التنفيذ'};
+function stageIndex(o){ return typeof o.stage==='number' ? o.stage : 0; }
+function stageLabelText(o){ return o.status==='delivered' ? 'تم التسليم' : STAGES[stageIndex(o)]; }
+function renderMiniPipeline(o){
+  const idx = stageIndex(o), done = o.status==='delivered';
+  const segs = STAGES.slice(1).map((label,i)=>{
+    let cls='mp-seg';
+    if(done || i<idx) cls+=' filled'; else if(i===idx) cls+=' current';
+    return `<span class="${cls}" title="${esc(label)}"></span>`;
+  }).join('');
+  return `<div class="mini-pipeline">${segs}</div>`;
+}
+function statusPillInfo(o){
+  if(o.status==='delivered') return {cls:'success', text:'تم التسليم'};
+  if(isLate(o)) return {cls:'danger', text:'متأخر'};
+  if(isUrgent(o)) return {cls:'warning', text:'عاجل'};
+  return {cls:'info', text:'جاري التنفيذ'};
 }
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
 }
-function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
 
-function animateNumber(el, target){
-  if(!el) return;
-  const prev = parseFloat((el.textContent||'0').replace(/[^0-9.-]/g,'')) || 0;
-  target = Number(target) || 0;
-  if(Math.abs(target-prev) < 1){ el.textContent = target.toLocaleString('en-US'); return; }
-  const duration = 500, startTime = performance.now();
-  function step(now){
-    const p = Math.min((now-startTime)/duration, 1);
-    const eased = 1-Math.pow(1-p, 3);
-    const val = Math.round(prev + (target-prev)*eased);
-    el.textContent = val.toLocaleString('en-US');
-    if(p<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-function fillProgressBars(){
-  requestAnimationFrame(()=>{
-    document.querySelectorAll('.stage-mini-bar span[data-target]').forEach(s=>{
-      s.style.width = s.dataset.target;
-    });
+/* ============================================================
+   ORDER COST CALCULATION
+============================================================ */
+function calcOrderCost(o){
+  let material = 0, totalW = 0;
+  (o.items||[]).forEach(it=>{
+    const key = materialKey(it);
+    material += (it.weight||0) * getMaterialPrice(key);
+    totalW += (it.weight||0);
   });
+  const days = o.status==='delivered' ? diffDays(o.dateReceived,o.dateDelivered) : diffDays(o.dateReceived,o.dateRequired||o.dateReceived);
+  const labor = (o.workers||0) * days * pricing.dailyWage;
+  const finishRate = pricing.finishRates[o.finishType||'none'] || 0;
+  const finish = totalW * finishRate;
+  const subtotal = material + labor + finish;
+  const overhead = subtotal * (pricing.overheadPercent||0)/100;
+  const total = subtotal + overhead;
+  const sellingPrice = o.sellingPrice || 0;
+  const profit = sellingPrice ? (sellingPrice - total) : null;
+  const margin = (sellingPrice>0) ? Math.round((profit/sellingPrice)*100) : null;
+  return { material, labor, finish, overhead, total, totalW, days, sellingPrice, profit, margin };
 }
 
 /* ============================================================
-   SKELETON LOADERS
+   NAV / SIDEBAR
 ============================================================ */
-function skeletonBlock(cls, n){
-  return Array.from({length:n}).map(()=>`<div class="skeleton ${cls}"></div>`).join('');
-}
-function withSkeleton(containerId, renderFn, cls, count){
-  const el = document.getElementById(containerId);
-  if(el) el.innerHTML = skeletonBlock(cls, count);
-  setTimeout(renderFn, 260);
-}
-
-/* ============================================================
-   NAV
-============================================================ */
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('view-'+btn.dataset.view).classList.add('active');
-    if(btn.dataset.view==='dashboard') withSkeleton('recentList', renderDashboard, 'skeleton-card', 3);
-    if(btn.dataset.view==='orders') withSkeleton('ordersListWrap', renderOrdersList, 'skeleton-card', 4);
-    if(btn.dataset.view==='clients'){ showClientsGrid(); withSkeleton('clientGrid', renderClientsGrid, 'skeleton-card', 3); }
-    if(btn.dataset.view==='costs') renderCosts();
-  });
-});
-
-function clockTick(){
-  const now = new Date();
-  document.getElementById('clockDate').textContent = now.toLocaleDateString('ar-EG',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
-}
-clockTick();
-
-/* ============================================================
-   CHIP GROUPS (single-select)
-============================================================ */
-function wireChipGroup(id){
-  const group=document.getElementById(id);
-  group.querySelectorAll('.chip').forEach(chip=>{
-    chip.addEventListener('click', ()=>{
-      group.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
-      chip.classList.add('sel');
-      renderCostPreview();
-    });
-  });
-}
-['spec_finishTypeChips'].forEach(wireChipGroup);
-function getChipVal(id){ const sel=document.querySelector('#'+id+' .chip.sel'); return sel?sel.dataset.val:null; }
-
-renderMaterialChips();
-
-/* finish yes/no reveal for finish-type chips */
-document.querySelectorAll('#spec_finishChips .chip').forEach(chip=>{
-  chip.addEventListener('click', ()=>{
-    document.querySelectorAll('#spec_finishChips .chip').forEach(c=>c.classList.remove('sel'));
-    chip.classList.add('sel');
-    document.getElementById('spec_finishTypeField').style.display = chip.dataset.val==='yes' ? 'block' : 'none';
-    renderCostPreview();
-  });
-});
-
-/* ============================================================
-   LIVE COST PREVIEW
-============================================================ */
-function calcCurrentSpecItemCost(){
-  const materialId = getChipVal('spec_materialChips');
-  const weight = parseFloat(document.getElementById('spec_weight').value) || 0;
-  const finish = getChipVal('spec_finishChips') || 'no';
-  const finishType = getChipVal('spec_finishTypeChips');
-  if(!materialId || !weight) return 0;
-  const mat = materials.find(m=>m.id===materialId);
-  const rate = mat ? mat.rate : 0;
-  let cost = weight * rate;
-  if(finish==='yes' && finishType) cost += weight * (pricing.finishRates[finishType]||0);
-  return cost;
-}
-function calcAddedItemsCost(){
-  return currentSpecItems.reduce((sum,it)=>{
-    let cost = it.weight * (it.rate||0);
-    if(it.finish==='yes') cost += it.weight * (it.finishRate||0);
-    return sum + cost;
-  }, 0);
-}
-function renderCostPreview(){
-  const cur = document.getElementById('cp_current');
-  if(!cur) return;
-  const currentCost = calcCurrentSpecItemCost();
-  const addedCost = calcAddedItemsCost();
-  cur.textContent = money(currentCost);
-  document.getElementById('cp_added').textContent = money(addedCost);
-  document.getElementById('cp_total').textContent = money(currentCost+addedCost);
-}
-
-/* ============================================================
-   TOUCH-FRIENDLY NUMBER STEPPERS
-============================================================ */
-function attachStepper(inputId, step, min){
-  const input = document.getElementById(inputId);
-  if(!input || input.dataset.stepperAttached) return;
-  input.dataset.stepperAttached = '1';
-  const wrap = document.createElement('div');
-  wrap.className = 'stepper-field';
-  input.parentNode.insertBefore(wrap, input);
-  const minusBtn = document.createElement('button');
-  minusBtn.type = 'button'; minusBtn.className = 'stepper-btn'; minusBtn.textContent = '−';
-  const plusBtn = document.createElement('button');
-  plusBtn.type = 'button'; plusBtn.className = 'stepper-btn'; plusBtn.textContent = '+';
-  wrap.appendChild(minusBtn);
-  wrap.appendChild(input);
-  wrap.appendChild(plusBtn);
-  const bump = (dir)=>{
-    let v = parseFloat(input.value) || 0;
-    v = v + dir*step;
-    if(min!==undefined) v = Math.max(min, v);
-    input.value = Number.isInteger(step) ? v : Math.round(v*10)/10;
-    input.dispatchEvent(new Event('input'));
+function switchView(viewName, element){
+  document.querySelectorAll('.view-page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  if(element) element.classList.add('active');
+  document.getElementById('view-'+viewName).classList.add('active');
+  const titles = {
+    dashboard:['لوحة التحكم','نظام إدارة ورشة التصنيع'],
+    'new-order':['أوردر جديد','تسجيل شغلانة من الاستلام مع حساب التكلفة لحظياً'],
+    'orders-list':['الأوردرات','سجل متابعة وتنفيذ الأوردرات'],
+    clients:['العملاء','سجل العملاء وإحصائيات الالتزام والأرباح'],
+    costs:['التكاليف والأسعار','نظام إدارة ورشة التصنيع']
   };
-  minusBtn.addEventListener('click', ()=>bump(-1));
-  plusBtn.addEventListener('click', ()=>bump(1));
+  document.getElementById('header-title').textContent = titles[viewName][0];
+  document.getElementById('header-subtitle').textContent = titles[viewName][1];
+  if(viewName==='dashboard') renderDashboard();
+  if(viewName==='orders-list') renderOrdersList();
+  if(viewName==='clients'){ showClientsGrid(); renderClients(); }
+  if(viewName==='costs'){ renderMaterialPrices(); renderOrdersCostTable(); }
+  closeSidebar();
+  lucide.createIcons();
 }
-['spec_length','spec_width'].forEach(id=>attachStepper(id, 10, 0));
-attachStepper('spec_thickness', 0.5, 0);
-attachStepper('spec_pieceCount', 1, 0);
-attachStepper('f_workers', 1, 0);
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlayBg').classList.add('active'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlayBg').classList.remove('active'); }
 
-/* ============================================================
-   SPEC ITEM BUILDER — multiple pieces per job
-============================================================ */
-let currentSpecItems = [];
-
-function computeSpecWeight(){
-  const L = parseFloat(document.getElementById('spec_length').value) || 0;
-  const W = parseFloat(document.getElementById('spec_width').value) || 0;
-  const T = parseFloat(document.getElementById('spec_thickness').value) || 0;
-  const Q = parseFloat(document.getElementById('spec_pieceCount').value) || 0;
-  const weight = T * L * W * 0.000008 * Q;
-  document.getElementById('spec_weight').value = weight ? weight.toFixed(2) : '0';
-  renderCostPreview();
-  return weight;
+function switchCostTab(tabName){
+  const matTab = document.getElementById('cost-subtab-materials');
+  const ordTab = document.getElementById('cost-subtab-orders');
+  document.getElementById('tab-btn-materials').classList.toggle('active', tabName==='materials');
+  document.getElementById('tab-btn-orders').classList.toggle('active', tabName==='orders');
+  matTab.style.display = tabName==='materials' ? 'block' : 'none';
+  ordTab.style.display = tabName==='orders' ? 'block' : 'none';
 }
-['spec_length','spec_width','spec_thickness','spec_pieceCount'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', computeSpecWeight);
-});
-
-function resetSpecFields(){
-  document.getElementById('spec_length').value='';
-  document.getElementById('spec_width').value='';
-  document.getElementById('spec_thickness').value='';
-  document.getElementById('spec_pieceCount').value='';
-  document.getElementById('spec_weight').value='0';
-  document.querySelectorAll('#spec_materialChips .chip, #spec_finishTypeChips .chip').forEach(c=>c.classList.remove('sel'));
-  document.querySelectorAll('#spec_finishChips .chip').forEach(c=>c.classList.remove('sel'));
-  document.querySelector('#spec_finishChips .chip[data-val="no"]').classList.add('sel');
-  document.getElementById('spec_finishTypeField').style.display='none';
-  renderCostPreview();
-}
-
-function renderSpecItemsList(){
-  const wrap = document.getElementById('specItemsList');
-  const totalsWrap = document.getElementById('specItemsTotals');
-  if(currentSpecItems.length===0){
-    wrap.innerHTML = '<p class="spec-items-empty">لسه مفيش قطع مضافة للشغلانة دي.</p>';
-    totalsWrap.style.display = 'none';
-    return;
-  }
-  wrap.innerHTML = currentSpecItems.map((it,idx)=>{
-    const finishLabel = it.finish==='yes' ? (' — 🎨 '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
-    return `<div class="spec-item-row">
-      <div>
-        <div class="si-main">${esc(it.materialName)} — ${it.weight.toFixed(2)} كجم × ${it.pieceCount} قطعة${finishLabel}</div>
-        <div class="si-meta">${it.length}×${it.width}×${it.thickness} مم</div>
-      </div>
-      <button type="button" class="si-remove" onclick="removeSpecItem(${idx})">✕</button>
-    </div>`;
-  }).join('');
-
-  const totalPieces = currentSpecItems.reduce((s,it)=>s+it.pieceCount,0);
-  const totalWeight = currentSpecItems.reduce((s,it)=>s+it.weight,0);
-  totalsWrap.style.display = 'flex';
-  totalsWrap.innerHTML = `
-    <div class="st"><span class="n mono">${totalPieces}</span><span class="l">إجمالي عدد القطع</span></div>
-    <div class="st"><span class="n mono">${totalWeight.toFixed(2)}</span><span class="l">إجمالي الوزن (كجم)</span></div>
-  `;
-}
-function removeSpecItem(idx){
-  currentSpecItems.splice(idx,1);
-  renderSpecItemsList();
-  renderCostPreview();
-}
-
-document.getElementById('addSpecItemBtn').addEventListener('click', ()=>{
-  const materialId = getChipVal('spec_materialChips');
-  if(!materialId){ toast('اختار نوع الخام'); return; }
-  const mat = materials.find(m=>m.id===materialId);
-  if(!mat){ toast('نوع الخام ده متلاقيش، اختار تاني'); return; }
-  const length = parseFloat(document.getElementById('spec_length').value) || 0;
-  const width = parseFloat(document.getElementById('spec_width').value) || 0;
-  const thickness = parseFloat(document.getElementById('spec_thickness').value) || 0;
-  const pieceCount = parseInt(document.getElementById('spec_pieceCount').value) || 0;
-  if(!length || !width || !thickness || !pieceCount){ toast('اكمل كل مقاسات القطعة وعدد القطع'); return; }
-  const weight = computeSpecWeight();
-  const finish = getChipVal('spec_finishChips') || 'no';
-  const finishType = finish==='yes' ? getChipVal('spec_finishTypeChips') : null;
-  if(finish==='yes' && !finishType){ toast('اختار نوع التشطيب'); return; }
-  const finishRate = finish==='yes' ? (pricing.finishRates[finishType]||0) : 0;
-
-  currentSpecItems.push({
-    materialId, materialName: mat.name, rate: mat.rate,
-    length, width, thickness, pieceCount, weight,
-    finish, finishType, finishRate
-  });
-  renderSpecItemsList();
-  resetSpecFields();
-  toast('اتضافت القطعة ✓');
-});
-
-/* ============================================================
-   NEW ORDER FORM
-============================================================ */
-document.getElementById('orderForm').addEventListener('submit', e=>{
-  e.preventDefault();
-  const clientName = document.getElementById('f_clientName').value.trim();
-  if(!clientName){ toast('لازم تكتب اسم العميل'); return; }
-  const jobName = document.getElementById('f_orderDesc').value.trim();
-  if(!jobName){ toast('لازم تكتب اسم الشغلانة'); return; }
-  if(currentSpecItems.length===0){ toast('ضيف مواصفة واحدة على الأقل قبل الحفظ'); return; }
-
-  const totalWeight = currentSpecItems.reduce((s,it)=>s+it.weight,0);
-  const totalPieces = currentSpecItems.reduce((s,it)=>s+it.pieceCount,0);
-
-  const order = {
-    id: Date.now().toString(36).toUpperCase(),
-    clientName,
-    clientPhone: document.getElementById('f_clientPhone').value.trim(),
-    clientEngineer: document.getElementById('f_clientEngineer').value.trim(),
-    executingEngineer: document.getElementById('f_executingEngineer').value.trim(),
-    productType: jobName,
-    productTypeOther: '',
-    orderDesc: jobName,
-    items: currentSpecItems.slice(),
-    weight: Math.round(totalWeight*100)/100,
-    pieceCount: totalPieces,
-    workers: parseInt(document.getElementById('f_workers').value) || 0,
-    dateReceived: todayStr(),
-    dateRequired: document.getElementById('f_dateRequired').value || '',
-    status: 'pending',
-    stage: 0,
-    dateDelivered: '',
-    issue: '',
-    deliveryNotes: '',
-    createdAt: new Date().toISOString()
-  };
-
-  orders.unshift(order);
-  saveOrders();
-
-  if(!clientsMeta[clientName]) clientsMeta[clientName] = { phone: order.clientPhone, address:'', notes:'' };
-  else if(order.clientPhone) clientsMeta[clientName].phone = order.clientPhone;
-  saveClientsMeta();
-
-  document.getElementById('orderForm').reset();
-  document.querySelectorAll('.chip.sel').forEach(c=>c.classList.remove('sel'));
-  currentSpecItems = [];
-  renderSpecItemsList();
-  resetSpecFields();
-  toast('تم حفظ الأوردر ✓');
-  renderDashboard();
-});
-renderSpecItemsList();
-resetSpecFields();
 
 /* ============================================================
    DASHBOARD
 ============================================================ */
-const GAUGE_CIRC = 263.9;
-function setGauge(id, ratio){
-  const el = document.getElementById(id);
-  if(!el) return;
-  const clamped = Math.max(0, Math.min(1, ratio||0));
-  el.style.strokeDashoffset = GAUGE_CIRC * (1-clamped);
+function weekTrend(curr, prev, badWhenUp){
+  if(prev===0 && curr===0) return {cls:'badge-flat', text:'— زي الاسبوع اللي فات'};
+  const diff = prev===0 ? 100 : Math.round(((curr-prev)/prev)*100);
+  if(diff===0) return {cls:'badge-flat', text:'— بدون تغيير'};
+  const rising = diff>0;
+  const good = badWhenUp ? !rising : rising;
+  return { cls: good?'badge-green':'badge-red', text: (rising?'↑ ':'↓ ')+Math.abs(diff)+'%' };
 }
-
-function windowCount(start, end, filterFn){
-  return orders.filter(o=>{
-    const d = new Date(o.createdAt);
-    return d>=start && d<end && filterFn(o);
-  }).length;
-}
-function pctChange(thisPeriod, lastPeriod){
-  if(lastPeriod===0 && thisPeriod===0) return null;
-  if(lastPeriod===0) return {dir:'up', pct:100};
-  const pct = Math.round(((thisPeriod-lastPeriod)/lastPeriod)*100);
-  if(pct===0) return {dir:'flat', pct:0};
-  return {dir: pct>0?'up':'down', pct: Math.abs(pct)};
-}
-function computeTrend(filterFn){
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7*86400000);
-  const twoWeeksAgo = new Date(now.getTime() - 14*86400000);
-  return pctChange(windowCount(weekAgo, now, filterFn), windowCount(twoWeeksAgo, weekAgo, filterFn));
-}
-function computeClientTrend(){
-  const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7*86400000);
-  const twoWeeksAgo = new Date(now.getTime() - 14*86400000);
-  const setFor = (start,end)=>{ const s=new Set(); orders.forEach(o=>{ const d=new Date(o.createdAt); if(d>=start&&d<end) s.add(o.clientName); }); return s.size; };
-  return pctChange(setFor(weekAgo, now), setFor(twoWeeksAgo, weekAgo));
-}
-function renderTrend(elId, trendObj, goodDirection){
-  const el = document.getElementById(elId);
-  if(!el) return;
-  if(!trendObj || orders.length<2){ el.textContent=''; el.className='trend'; return; }
-  const arrow = trendObj.dir==='up' ? '↑' : (trendObj.dir==='down' ? '↓' : '→');
-  let cls = 'flat';
-  if(trendObj.dir!=='flat'){
-    const isGood = (trendObj.dir==='up' && goodDirection==='up') || (trendObj.dir==='down' && goodDirection==='down');
-    cls = isGood ? 'up' : 'down';
-  }
-  el.className = 'trend '+cls;
-  el.textContent = `${arrow} ${trendObj.pct}% عن الأسبوع اللي فات`;
-}
-
 function renderDashboard(){
   const total = orders.length;
-  const activeCount = orders.filter(o=>o.status==='pending').length;
-  const lateCount = orders.filter(isLate).length;
-  const deliveredCount = orders.filter(o=>o.status==='delivered').length;
-  const clientCount = new Set(orders.map(o=>o.clientName)).size;
+  const active = orders.filter(o=>o.status==='pending').length;
+  const late = orders.filter(isLate).length;
+  const delivered = orders.filter(o=>o.status==='delivered').length;
+  const clientsCount = new Set(orders.map(o=>o.clientName)).size;
 
-  animateNumber(document.getElementById('kpiTotal'), total);
-  animateNumber(document.getElementById('kpiActive'), activeCount);
-  animateNumber(document.getElementById('kpiLate'), lateCount);
-  animateNumber(document.getElementById('kpiDelivered'), deliveredCount);
-  animateNumber(document.getElementById('kpiClients'), clientCount);
+  document.getElementById('kpiTotal').textContent = total;
+  document.getElementById('kpiActive').textContent = active;
+  document.getElementById('kpiLate').textContent = late;
+  document.getElementById('kpiDelivered').textContent = delivered;
+  document.getElementById('kpiClients').textContent = clientsCount;
 
-  renderTrend('trend_total', computeTrend(()=>true), 'up');
-  renderTrend('trend_active', computeTrend(o=>o.status==='pending'), 'up');
-  renderTrend('trend_late', computeTrend(isLate), 'down');
-  renderTrend('trend_delivered', computeTrend(o=>o.status==='delivered'), 'up');
-  renderTrend('trend_clients', computeClientTrend(), 'up');
+  const now = Date.now(), weekMs = 7*86400000;
+  function ts(o){ return new Date(o.createdAt||o.dateReceived||now).getTime(); }
+  const thisWeek = orders.filter(o=>{ const t=ts(o); return t>=now-weekMs && t<=now; });
+  const lastWeek = orders.filter(o=>{ const t=ts(o); return t>=now-2*weekMs && t<now-weekMs; });
+  function setTrend(id, curr, prev, badWhenUp){
+    const info = weekTrend(curr, prev, badWhenUp);
+    const el = document.getElementById(id);
+    el.className = 'badge '+info.cls; el.textContent = info.text;
+  }
+  setTrend('trendTotal', thisWeek.length, lastWeek.length, false);
+  setTrend('trendActive', thisWeek.filter(o=>o.status==='pending').length, lastWeek.filter(o=>o.status==='pending').length, false);
+  setTrend('trendLate', thisWeek.filter(isLate).length, lastWeek.filter(isLate).length, true);
+  setTrend('trendDelivered', thisWeek.filter(o=>o.status==='delivered').length, lastWeek.filter(o=>o.status==='delivered').length, false);
+  setTrend('trendClients', new Set(thisWeek.map(o=>o.clientName)).size, new Set(lastWeek.map(o=>o.clientName)).size, false);
 
-  setGauge('gauge_total', total ? 1 : 0);
-  setGauge('gauge_active', total ? activeCount/total : 0);
-  setGauge('gauge_late', total ? lateCount/total : 0);
-  setGauge('gauge_delivered', total ? deliveredCount/total : 0);
-  setGauge('gauge_clients', total ? Math.min(clientCount/total,1) : 0);
+  const today = new Date();
+  document.getElementById('heroDateTag').textContent = '• ' + today.toLocaleDateString('ar-EG',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('sidebarDateLabel').textContent = today.toLocaleDateString('ar-EG',{weekday:'long'});
+  document.getElementById('heroSummary').textContent = total===0 ? 'ابدأ بتسجيل أول أوردر من "أوردر جديد"' : `${active} أوردر قيد التنفيذ${late? ' • '+late+' متأخر يحتاج متابعة':''}`;
 
-  const recentWrap = document.getElementById('recentList');
+  const dashTable = document.getElementById('dashboard-orders-tbody');
   if(orders.length===0){
-    recentWrap.innerHTML = '<p class="empty-note">لسه مفيش أوردرات مسجلة.</p>';
+    dashTable.innerHTML = `<tr><td colspan="6" class="empty-note">لسه مفيش أوردرات مسجلة.</td></tr>`;
   } else {
-    recentWrap.innerHTML = orders.slice(0,6).map(o=>{
-      const label = productLabel(o);
-      return `<div class="recent-item" onclick="openOrderModal('${o.id}')">
-        <span class="rid">#${o.id}</span>
-        <span class="rname">${esc(o.clientName)} — ${label}</span>
-        <span class="rmeta">${stageLabelText(o)}</span>
-      </div>`;
+    dashTable.innerHTML = orders.slice(0,6).map(o=>{
+      const st = statusPillInfo(o);
+      const c = calcOrderCost(o);
+      return `<tr class="clickable" onclick="openOrderModal('${o.id}')">
+        <td class="code-cell">${o.id}</td>
+        <td><strong>${esc(o.orderDesc)}</strong>${renderMiniPipeline(o)}</td>
+        <td>${esc(o.clientName)}</td>
+        <td><span class="status-pill ${st.cls}">${st.text}</span></td>
+        <td>${fmtDate(o.dateRequired)}</td>
+        <td><strong>${money(o.sellingPrice||c.total)}</strong></td>
+      </tr>`;
     }).join('');
   }
 
   const lateOrders = orders.filter(isLate);
-  const alertWrap = document.getElementById('alertList');
+  document.getElementById('alertCountBadge').textContent = lateOrders.length + ' تنبيه';
+  const alertWrap = document.getElementById('alertsList');
   if(lateOrders.length===0){
-    alertWrap.innerHTML = '<p class="empty-note">مفيش تنبيهات دلوقتي — كله ماشي في ميعاده.</p>';
+    alertWrap.innerHTML = `<p class="empty-note">مفيش تنبيهات دلوقتي — كله ماشي في ميعاده.</p>`;
   } else {
-    alertWrap.innerHTML = lateOrders.map(o=>`
-      <div class="alert-row">
-        <span class="ic">⚠️</span>
-        <span><b>${esc(o.clientName)}</b> — الميعاد كان ${fmtDate(o.dateRequired)}</span>
-        <span class="meta">#${o.id}</span>
-      </div>`).join('');
+    alertWrap.innerHTML = lateOrders.map(o=>{
+      const days = Math.round((new Date(todayStr())-new Date(o.dateRequired))/86400000);
+      return `<div class="alert-card" onclick="openOrderModal('${o.id}')">
+        <div class="alert-top">
+          <span class="delay-tag">+${days} يوم</span>
+          <span style="color:var(--accent-yellow); font-family:var(--font-mono); font-size:12px;">${o.id}</span>
+          <i data-lucide="clock" style="color:var(--red); width:16px;"></i>
+        </div>
+        <div class="alert-title">${esc(o.orderDesc)}</div>
+        <div class="alert-client">${esc(o.clientName)}</div>
+        <div class="alert-footer"><span>المرحلة: <strong style="color:var(--accent-yellow);">${stageLabelText(o)}</strong></span><span>${esc(o.executingEngineer)||'—'}</span></div>
+      </div>`;
+    }).join('');
   }
+  lucide.createIcons();
+}
+
+/* ============================================================
+   NEW ORDER — chips setup
+============================================================ */
+function renderIronTypeChips(){
+  const wrap = document.getElementById('ironTypeChips');
+  const base = [['sheet','صاج'],['boxes','علب'],['zawya','زوايا'],['pipes','مواسير'],['kamar','كمر']];
+  const custom = getCustomTopLevelMaterials().map(k=>[k, materialLabel(k)]);
+  const all = base.concat(custom);
+  wrap.innerHTML = all.map(([val,label])=>`<div class="chip" data-val="${val}" onclick="selectIronType('${val}', this)">${label}</div>`).join('');
+}
+function renderSheetTypeChips(selectName){
+  const wrap = document.getElementById('sheetTypeChips');
+  wrap.innerHTML = getSheetTypes().map(name=>`<div class="chip${name===selectName?' active':''}" data-val="${esc(name)}" onclick="selectSheetType('${esc(name).replace(/'/g,"\\'")}', this)">${esc(name)}</div>`).join('');
+}
+let currentIronType = null, currentSheetType = null;
+function selectIronType(val, el){
+  currentIronType = val;
+  document.querySelectorAll('#ironTypeChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const isSheet = val==='sheet';
+  document.getElementById('sheetTypeField').style.display = isSheet ? 'block' : 'none';
+  if(isSheet){ currentSheetType=null; renderSheetTypeChips(null); }
+  updateDimensionLabels(val);
+  updateWeightReadout();
+}
+function selectSheetType(name, el){
+  currentSheetType = name;
+  document.querySelectorAll('#sheetTypeChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  updateWeightReadout();
+}
+function addCustomSheetType(){
+  const input = document.getElementById('f_customSheetType');
+  const name = input.value.trim();
+  if(!name){ toast('اكتب اسم نوع الصاج الأول'); return; }
+  const key = `sheet:${name}`;
+  if(pricing.materials[key]){ toast('النوع ده موجود أصلاً'); }
+  else{
+    pricing.materials[key] = { price: 50, density: 7.85 };
+    savePricing();
+    toast('اتضاف نوع الصاج ✓ — عدّل سعره من تاب التكاليف');
+  }
+  input.value='';
+  renderSheetTypeChips(name);
+  const chipEl = document.querySelector(`#sheetTypeChips .chip[data-val="${CSS.escape(name)}"]`);
+  if(chipEl) selectSheetType(name, chipEl);
+}
+function updateDimensionLabels(ironType){
+  if(ironType==='pipes'){
+    document.getElementById('lbl_f_length').textContent='الطول (مم)';
+    document.getElementById('lbl_f_width').textContent='القطر الخارجي OD (مم)';
+    document.getElementById('lbl_f_thickness').textContent='سمك الجدار (مم)';
+  } else {
+    document.getElementById('lbl_f_length').textContent='الطول (مم)';
+    document.getElementById('lbl_f_width').textContent='العرض (مم)';
+    document.getElementById('lbl_f_thickness').textContent='السمك (مم)';
+  }
+}
+function currentMaterialKey(){
+  if(!currentIronType) return null;
+  return currentIronType==='sheet' ? (currentSheetType?`sheet:${currentSheetType}`:null) : currentIronType;
+}
+function updateWeightReadout(){
+  const key = currentMaterialKey();
+  const density = key ? getMaterialDensity(key) : 7.85;
+  const w = computeWeight(currentIronType,
+    document.getElementById('f_length').value,
+    document.getElementById('f_width').value,
+    document.getElementById('f_thickness').value,
+    document.getElementById('f_pieceCount').value,
+    density);
+  document.getElementById('temp-weight-val').textContent = w + ' كجم';
+  recalculateAll();
+}
+
+let currentFinishType = 'none';
+function renderFinishChips(){
+  const wrap = document.getElementById('finish-chips');
+  wrap.innerHTML = Object.entries(FINISH_LABELS).map(([val,label])=>
+    `<div class="chip${val==='none'?' active':''}" data-val="${val}" onclick="selectFinish('${val}', this)">${label}</div>`).join('');
+}
+function selectFinish(val, el){
+  currentFinishType = val;
+  document.querySelectorAll('#finish-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  recalculateAll();
+}
+
+let currentMaterials = [];
+function addMaterialItem(){
+  if(!currentIronType){ toast('اختار نوع الخام الأول'); return; }
+  if(currentIronType==='sheet' && !currentSheetType){ toast('اختار نوع الصاج'); return; }
+  const length = parseFloat(document.getElementById('f_length').value)||0;
+  const width = parseFloat(document.getElementById('f_width').value)||0;
+  const thickness = parseFloat(document.getElementById('f_thickness').value)||0;
+  const pieceCount = parseInt(document.getElementById('f_pieceCount').value)||0;
+  if(!pieceCount){ toast('اكتب عدد القطع'); return; }
+  const key = currentMaterialKey();
+  const density = getMaterialDensity(key);
+  const weight = computeWeight(currentIronType, length, width, thickness, pieceCount, density);
+
+  currentMaterials.push({ ironType: currentIronType, sheetType: currentIronType==='sheet'?currentSheetType:'', length, width, thickness, pieceCount, weight });
+  renderMaterialsList();
+  document.getElementById('f_length').value='';
+  document.getElementById('f_width').value='';
+  document.getElementById('f_thickness').value='';
+  document.getElementById('f_pieceCount').value='1';
+  document.querySelectorAll('#ironTypeChips .chip, #sheetTypeChips .chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('sheetTypeField').style.display='none';
+  currentIronType=null; currentSheetType=null;
+  updateDimensionLabels(null);
+  document.getElementById('temp-weight-val').textContent = '0 كجم';
+  recalculateAll();
+  toast('اتضافت المواصفة دي للشغلانة ✓');
+}
+function deleteMaterial(idx){ currentMaterials.splice(idx,1); renderMaterialsList(); recalculateAll(); }
+function renderMaterialsList(){
+  const wrap = document.getElementById('materials-list');
+  if(currentMaterials.length===0){ wrap.innerHTML = `<p class="empty-note">لسه مفيش مواصفات متضافة.</p>`; return; }
+  wrap.innerHTML = currentMaterials.map((m,idx)=>{
+    const key = materialKey(m);
+    const dims = m.ironType==='pipes'
+      ? `طول ${m.length} × قطر خارجي ${m.width} × جدار ${m.thickness} مم`
+      : `${m.length}×${m.width}×${m.thickness} مم`;
+    return `<div class="registered-item">
+      <div>
+        <strong><span style="color:var(--accent-yellow); margin-inline-end:8px;">${String(idx+1).padStart(2,'0')}</span>${materialLabel(key)}</strong>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">${dims} • ${m.pieceCount} قطعة</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <strong style="color:var(--accent-yellow); font-family:var(--font-mono);">${m.weight} كجم</strong>
+        <span style="font-size:11px; color:var(--text-muted);">${money(m.weight*getMaterialPrice(key))}</span>
+        <button class="btn-delete" onclick="deleteMaterial(${idx})"><i data-lucide="trash-2" style="width:16px;"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function recalculateAll(){
+  const materialsCost = currentMaterials.reduce((s,m)=>s+ m.weight*getMaterialPrice(materialKey(m)), 0);
+  const totalWeight = currentMaterials.reduce((s,m)=>s+m.weight, 0);
+  const workers = parseFloat(document.getElementById('workers-count').value)||0;
+  const dRec = document.getElementById('date-receive').value || todayStr();
+  const dDel = document.getElementById('date-deliver').value || dRec;
+  const days = diffDays(dRec, dDel);
+  const laborCost = workers * days * pricing.dailyWage;
+  const finishRate = pricing.finishRates[currentFinishType]||0;
+  const finishCost = totalWeight * finishRate;
+  const subtotal = materialsCost + laborCost + finishCost;
+  const overheadCost = subtotal * (pricing.overheadPercent||0)/100;
+  const totalCost = subtotal + overheadCost;
+
+  const manualSell = parseFloat(document.getElementById('manual-sell-price').value);
+  const sellingPrice = manualSell>0 ? manualSell : Math.round(totalCost*1.35);
+  const profit = sellingPrice - totalCost;
+  const margin = sellingPrice>0 ? ((profit/sellingPrice)*100).toFixed(1) : '0.0';
+
+  document.getElementById('cost-materials').textContent = money(materialsCost);
+  document.getElementById('cost-labor').textContent = money(laborCost);
+  document.getElementById('cost-finish').textContent = money(finishCost);
+  document.getElementById('cost-overhead').textContent = money(overheadCost);
+  document.getElementById('cost-total').textContent = money(totalCost);
+  document.getElementById('cost-sell').textContent = money(sellingPrice);
+  document.getElementById('cost-profit').textContent = money(profit);
+  document.getElementById('cost-margin').textContent = margin + '%';
+  document.getElementById('cost-weight').textContent = `وزن إجمالي: ${totalWeight.toFixed(2)} كجم`;
+  document.getElementById('manual-sell-price').placeholder = `مقترح: ${Math.round(totalCost*1.35).toLocaleString('en-US')} ج.م`;
+}
+
+function saveOrder(){
+  const clientName = document.getElementById('client-name').value.trim();
+  if(!clientName){ toast('لازم تكتب اسم العميل'); return; }
+  const jobName = document.getElementById('job-name').value.trim();
+  if(!jobName){ toast('لازم تكتب اسم الشغلانة'); return; }
+  if(currentMaterials.length===0){ toast('ضيف مواصفة واحدة على الأقل قبل الحفظ'); return; }
+
+  const clientPhone = document.getElementById('client-phone').value.trim();
+  const totalWeight = currentMaterials.reduce((s,m)=>s+m.weight,0);
+  const totalPieces = currentMaterials.reduce((s,m)=>s+m.pieceCount,0);
+  const dRec = document.getElementById('date-receive').value || todayStr();
+  const dDel = document.getElementById('date-deliver').value || '';
+  const manualSell = parseFloat(document.getElementById('manual-sell-price').value);
+  const workersVal = parseInt(document.getElementById('workers-count').value)||0;
+
+  const order = {
+    id: 'PO-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-5),
+    clientName, clientPhone,
+    clientEngineer: document.getElementById('client-engineer').value.trim(),
+    executingEngineer: document.getElementById('exec-engineer').value.trim(),
+    productType: document.getElementById('product-type').value.trim(),
+    orderDesc: jobName,
+    items: currentMaterials.slice(),
+    weight: Math.round(totalWeight*100)/100,
+    pieceCount: totalPieces,
+    finishType: currentFinishType,
+    workers: workersVal,
+    dateReceived: dRec, dateRequired: dDel, dateDelivered: '',
+    status: 'pending', stage: 0, issue: '', deliveryNotes: '',
+    sellingPrice: 0,
+    createdAt: new Date().toISOString()
+  };
+  const c = calcOrderCost(order);
+  order.sellingPrice = manualSell>0 ? manualSell : Math.round(c.total * 1.35);
+
+  orders.unshift(order);
+  saveOrders();
+  if(!clientsMeta[clientName]) clientsMeta[clientName] = { phone: clientPhone, address:'', notes:'' };
+  else if(clientPhone) clientsMeta[clientName].phone = clientPhone;
+  saveClientsMeta();
+
+  currentMaterials = [];
+  renderMaterialsList();
+  document.getElementById('client-name').value='';
+  document.getElementById('client-phone').value='';
+  document.getElementById('client-engineer').value='';
+  document.getElementById('exec-engineer').value='';
+  document.getElementById('job-name').value='';
+  document.getElementById('product-type').value='';
+  document.getElementById('manual-sell-price').value='';
+  document.querySelectorAll('#finish-chips .chip').forEach(c=>c.classList.remove('active'));
+  const noneChip = document.querySelector('#finish-chips .chip[data-val="none"]');
+  if(noneChip) noneChip.classList.add('active');
+  currentFinishType='none';
+  setDefaultDates();
+  updateDatalists();
+  recalculateAll();
+  toast(`تم حفظ الأوردر ${order.id} ✓`);
+  switchView('orders-list', document.querySelector('.nav-item[data-view=orders-list]'));
+}
+
+function setDefaultDates(){
+  const today = todayStr();
+  document.getElementById('date-receive').value = today;
+  const d = new Date(); d.setDate(d.getDate()+14);
+  document.getElementById('date-deliver').value = d.toISOString().slice(0,10);
 }
 
 /* ============================================================
@@ -1649,363 +1205,380 @@ function renderDashboard(){
 ============================================================ */
 let currentOrderFilter = 'all';
 document.getElementById('orderFilterSet').addEventListener('click', e=>{
-  if(e.target.tagName!=='BUTTON') return;
-  document.querySelectorAll('#orderFilterSet button').forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  currentOrderFilter = e.target.dataset.f;
+  const el = e.target.closest('.cost-tab'); if(!el) return;
+  document.querySelectorAll('#orderFilterSet .cost-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentOrderFilter = el.dataset.f;
   renderOrdersList();
 });
-document.getElementById('orderSearch').addEventListener('input', renderOrdersList);
-
 function renderOrdersList(){
-  const q = document.getElementById('orderSearch').value.trim().toLowerCase();
+  const q = (document.getElementById('orderSearch').value||'').trim().toLowerCase();
   let list = orders.filter(o=>{
     if(currentOrderFilter==='pending' && o.status!=='pending') return false;
     if(currentOrderFilter==='late' && !isLate(o)) return false;
     if(currentOrderFilter==='urgent' && !isUrgent(o)) return false;
     if(currentOrderFilter==='delivered' && o.status!=='delivered') return false;
     if(q){
-      const label = productLabel(o);
-      const hay = (o.clientName+' '+label+' '+o.orderDesc).toLowerCase();
+      const hay = (o.clientName+' '+o.orderDesc+' '+(o.productType||'')).toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
   });
-
-  const wrap = document.getElementById('ordersListWrap');
-  if(list.length===0){ wrap.innerHTML = '<p class="empty-note">مفيش نتايج مطابقة.</p>'; return; }
-
-  wrap.innerHTML = list.map(o=>{
-    const label = productLabel(o);
-    const st = orderStatusInfo(o);
-    return `<div class="order-card spec-card" onclick="openOrderModal('${o.id}')">
-      <div>
-        <div class="oc-id">#${o.id}</div>
-        <div class="oc-title">${label}${o.orderDesc ? ' — '+esc(o.orderDesc):''}</div>
-        <div class="oc-client">👤 ${esc(o.clientName)}${o.executingEngineer ? ' &nbsp;·&nbsp; 👷 '+esc(o.executingEngineer) : ''}</div>
-        <div class="oc-meta">
-          <span>⚖ ${o.weight||0} كجم</span>
-          <span>📦 ${o.pieceCount||0} قطعة</span>
-          <span>📅 ${fmtDate(o.dateRequired)}</span>
-        </div>
-        <div class="stage-mini">
-          <span class="stage-mini-label">${stageLabelText(o)}</span>
-          <div class="stage-mini-bar"><span data-target="${stagePercent(o)}%"></span></div>
-        </div>
-      </div>
-      <div class="oc-right"><span class="stamp ${st.cls}">${st.text}</span></div>
-    </div>`;
+  const tbody = document.getElementById('all-orders-tbody');
+  if(list.length===0){ tbody.innerHTML = `<tr><td colspan="7" class="empty-note">مفيش نتايج مطابقة.</td></tr>`; return; }
+  tbody.innerHTML = list.map(o=>{
+    const st = statusPillInfo(o);
+    const c = calcOrderCost(o);
+    return `<tr class="clickable" onclick="openOrderModal('${o.id}')">
+      <td class="code-cell">${o.id}</td>
+      <td><strong>${esc(o.orderDesc)}</strong></td>
+      <td>${esc(o.clientName)}</td>
+      <td>${esc(o.executingEngineer)||'—'}</td>
+      <td><span class="status-pill ${st.cls}">${st.text}</span>${renderMiniPipeline(o)}</td>
+      <td>${fmtDate(o.dateRequired)}</td>
+      <td><strong>${money(o.sellingPrice||c.total)}</strong></td>
+    </tr>`;
   }).join('');
-  fillProgressBars();
 }
 
 /* ============================================================
-   ORDER MODAL (view / edit / deliver / delete)
+   ORDER DETAIL MODAL
 ============================================================ */
 let activeOrderId = null;
 function openOrderModal(id){
   activeOrderId = id;
   const o = orders.find(x=>x.id===id);
   if(!o) return;
-  const st = orderStatusInfo(o);
-
-  document.getElementById('om_title').textContent = '#'+o.id+' — '+esc(o.clientName);
-  document.getElementById('om_body').innerHTML = `
-    <div style="margin-bottom:14px;"><span class="stamp ${st.cls}">${st.text}</span></div>
-    <div style="margin-bottom:18px;">
-      <div class="section-label">مرحلة التصنيع</div>
-      ${renderStageTrack(o, o.status!=='delivered')}
-    </div>
-    <div class="detail-grid">
-      <div class="d"><span class="k">اسم الشغلانة</span><span class="v">${esc(o.orderDesc)||'—'}</span></div>
-      <div class="d"><span class="k">مهندس الشغلانة (العميل)</span><span class="v">${esc(o.clientEngineer)||'—'}</span></div>
-      <div class="d"><span class="k">المهندس المنفذ</span><span class="v">${esc(o.executingEngineer)||'—'}</span></div>
-      <div class="d"><span class="k">إجمالي الوزن</span><span class="v mono">${o.weight||0} كجم</span></div>
-      <div class="d"><span class="k">إجمالي عدد القطع</span><span class="v mono">${o.pieceCount||0}</span></div>
-      <div class="d"><span class="k">عدد العمال</span><span class="v mono">${o.workers||0}</span></div>
-      <div class="d"><span class="k">تاريخ الاستلام</span><span class="v mono">${fmtDate(o.dateReceived)}</span></div>
-      <div class="d"><span class="k">التسليم المطلوب</span><span class="v mono">${fmtDate(o.dateRequired)}</span></div>
-      ${o.status==='delivered' ? `
-      <div class="d"><span class="k">تاريخ التسليم الفعلي</span><span class="v mono">${fmtDate(o.dateDelivered)}</span></div>
-      <div class="d"><span class="k">مشاكل حصلت</span><span class="v">${LABELS.issue[o.issue]||'—'}</span></div>` : ''}
-    </div>
-    ${Array.isArray(o.items) && o.items.length ? `
-    <div style="margin-bottom:16px;">
-      <div class="section-label">📐 قطع الشغلانة</div>
-      ${o.items.map(it=>{
-        const matLabel = it.materialName || (LABELS.ironType[it.ironType]||it.ironType) || '—';
-        const finishLabel = it.finish==='yes' ? (' — 🎨 '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
-        return `<div class="spec-item-row">
-          <div>
-            <div class="si-main">${esc(matLabel)} — ${(it.weight||0).toFixed(2)} كجم × ${it.pieceCount} قطعة${finishLabel}</div>
-            <div class="si-meta">${it.length}×${it.width}×${it.thickness} مم</div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>` : ''}
-    ${o.deliveryNotes ? `<div class="field"><label>ملاحظات التسليم</label><div style="font-size:12.5px;color:var(--ink-dim)">${esc(o.deliveryNotes)}</div></div>` : ''}
-  `;
-
+  const st = statusPillInfo(o);
   const c = calcOrderCost(o);
-  const profitCls = c.profit===null ? '' : (c.profit>=0 ? 'profit-pos':'profit-neg');
-  document.getElementById('om_body').innerHTML += `
-    <div class="cost-breakdown-box spec-card" style="margin-top:4px;">
-      <div class="section-label">💰 تكلفة الأوردر</div>
-      <div class="cost-line"><span>خامة (${o.weight||0} كجم)</span><span class="v">${money(c.material)}</span></div>
-      <div class="cost-line"><span>عمالة (${o.workers||0} عامل × ${c.days} يوم)</span><span class="v">${money(c.labor)}</span></div>
-      <div class="cost-line"><span>دهان/تشطيب</span><span class="v">${money(c.finish)}</span></div>
-      <div class="cost-line"><span>مصاريف تشغيل (${pricing.overheadPercent}%)</span><span class="v">${money(c.overhead)}</span></div>
-      <div class="cost-line total"><span>الإجمالي</span><span class="v" style="color:var(--accent)">${money(c.total)} ج.م</span></div>
-      <div class="field" style="margin-top:12px;">
-        <label>سعر البيع المتفق عليه (اختياري)</label>
-        <input type="number" min="0" step="10" id="om_sellingPrice" value="${o.sellingPrice||''}" placeholder="اكتب السعر لحساب الربح">
-      </div>
-      ${c.profit!==null ? `<div class="cost-line total"><span>الربح المتوقع</span><span class="v ${profitCls}">${money(c.profit)} ج.م (${c.margin}%)</span></div>` : ''}
-      <button class="btn small" style="margin-top:6px;" onclick="saveOrderSellingPrice('${o.id}')">💾 حفظ سعر البيع</button>
+  const itemsRows = (o.items||[]).map(it=>{
+    const key = materialKey(it);
+    const dims = it.ironType==='pipes' ? `طول ${it.length} × قطر خارجي ${it.width} × جدار ${it.thickness} مم` : `${it.length}×${it.width}×${it.thickness} مم`;
+    return `<div class="registered-item"><div><strong>${materialLabel(key)}</strong><div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${dims} • ${it.pieceCount} قطعة</div></div><strong style="font-family:var(--font-mono);color:var(--accent-yellow);">${it.weight} كجم</strong></div>`;
+  }).join('') || '<p class="empty-note">مفيش مواصفات.</p>';
+
+  document.getElementById('om_title').textContent = o.id + ' — ' + o.clientName;
+  document.getElementById('om_body').innerHTML = `
+    <div style="margin-bottom:14px;"><span class="status-pill ${st.cls}">${st.text}</span></div>
+    <div style="margin-bottom:16px;"><div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">مرحلة التصنيع: ${stageLabelText(o)}</div>${renderMiniPipeline(o)}</div>
+    <div class="detail-grid">
+      <div class="d"><span class="k">نوع المنتج</span><span class="v">${esc(o.productType)||'—'}</span></div>
+      <div class="d"><span class="k">اسم الشغلانة</span><span class="v">${esc(o.orderDesc)}</span></div>
+      <div class="d"><span class="k">مهندس العميل</span><span class="v">${esc(o.clientEngineer)||'—'}</span></div>
+      <div class="d"><span class="k">المهندس المنفذ</span><span class="v">${esc(o.executingEngineer)||'—'}</span></div>
+      <div class="d"><span class="k">إجمالي الوزن</span><span class="v">${o.weight||0} كجم</span></div>
+      <div class="d"><span class="k">إجمالي القطع</span><span class="v">${o.pieceCount||0}</span></div>
+      <div class="d"><span class="k">دهان/تشطيب</span><span class="v">${FINISH_LABELS[o.finishType]||'—'}</span></div>
+      <div class="d"><span class="k">عدد العمال</span><span class="v">${o.workers||0}</span></div>
+      <div class="d"><span class="k">تاريخ الاستلام</span><span class="v">${fmtDate(o.dateReceived)}</span></div>
+      <div class="d"><span class="k">التسليم المطلوب</span><span class="v">${fmtDate(o.dateRequired)}</span></div>
     </div>
+    <h4 style="font-size:13px;margin-bottom:10px;">المواصفات</h4>
+    ${itemsRows}
+    <div class="cost-row" style="margin-top:16px;"><span>خامات</span><strong>${money(c.material)}</strong></div>
+    <div class="cost-row"><span>عمالة</span><strong>${money(c.labor)}</strong></div>
+    <div class="cost-row"><span>تشطيب</span><strong>${money(c.finish)}</strong></div>
+    <div class="cost-row"><span>مصاريف</span><strong>${money(c.overhead)}</strong></div>
+    <div class="cost-divider"></div>
+    <div class="cost-row"><span style="color:#fff;">إجمالي التكلفة</span><strong style="color:#fff;">${money(c.total)}</strong></div>
+    <div class="cost-row"><span style="color:var(--accent-yellow);">سعر البيع</span><strong style="color:var(--accent-yellow);">${money(o.sellingPrice)}</strong></div>
+    ${c.profit!==null ? `<div class="cost-row"><span style="color:var(--green);">الربح</span><strong style="color:var(--green);">${money(c.profit)} (${c.margin}%)</strong></div>` : ''}
   `;
-
-  let footHtml = '';
-  if(o.status==='pending') footHtml += `<button class="btn" onclick="openDeliverModal()">✅ تسليم الأوردر</button>`;
-  footHtml += `<button class="btn ghost" onclick="viewClientFromOrder('${o.clientName}')">👤 ملف العميل</button>`;
-  footHtml += `<button class="btn danger" onclick="deleteOrder('${o.id}')">🗑️ حذف</button>`;
-  document.getElementById('om_foot').innerHTML = footHtml;
-
-  document.getElementById('orderModalOverlay').classList.add('active');
+  let foot = '';
+  if(o.status==='pending') foot += `<button class="btn-primary" onclick="openDeliverModal()">✅ تسليم الأوردر</button>`;
+  foot += `<button class="btn-edit" onclick="viewClientFromOrder('${o.clientName.replace(/'/g,"\\'")}')">👤 ملف العميل</button>`;
+  foot += `<button class="btn-danger-ghost" onclick="deleteOrder('${o.id}')">🗑️ حذف</button>`;
+  document.getElementById('om_foot').innerHTML = foot;
+  openModal('orderModalOverlay');
 }
-document.getElementById('om_close').addEventListener('click', ()=>document.getElementById('orderModalOverlay').classList.remove('active'));
-
 function deleteOrder(id){
   if(!confirm('متأكد إنك عايز تمسح الأوردر ده؟')) return;
   orders = orders.filter(o=>o.id!==id);
   saveOrders();
-  document.getElementById('orderModalOverlay').classList.remove('active');
+  closeModal('orderModalOverlay');
   renderDashboard(); renderOrdersList();
   toast('تم الحذف');
 }
-
 function viewClientFromOrder(name){
-  document.getElementById('orderModalOverlay').classList.remove('active');
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelector('.tab-btn[data-view="clients"]').classList.add('active');
-  document.getElementById('view-clients').classList.add('active');
+  closeModal('orderModalOverlay');
+  switchView('clients', document.querySelector('.nav-item[data-view=clients]'));
   openClientDetail(name);
 }
-
-/* deliver modal */
 function openDeliverModal(){
   document.getElementById('dm_dateDelivered').value = todayStr();
-  document.querySelectorAll('#dm_issueChips .chip').forEach(c=>c.classList.remove('sel'));
-  document.querySelector('#dm_issueChips .chip[data-val="none"]').classList.add('sel');
+  document.querySelectorAll('#dm_issueChips .chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('#dm_issueChips .chip[data-val="none"]').classList.add('active');
   document.getElementById('dm_notes').value='';
-  document.getElementById('deliverModalOverlay').classList.add('active');
+  openModal('deliverModalOverlay');
 }
-document.getElementById('dm_close').addEventListener('click', ()=>document.getElementById('deliverModalOverlay').classList.remove('active'));
-document.querySelectorAll('#dm_issueChips .chip').forEach(chip=>{
-  chip.addEventListener('click', ()=>{
-    document.querySelectorAll('#dm_issueChips .chip').forEach(c=>c.classList.remove('sel'));
-    chip.classList.add('sel');
-  });
+document.getElementById('dm_issueChips').addEventListener('click', e=>{
+  const el = e.target.closest('.chip'); if(!el) return;
+  document.querySelectorAll('#dm_issueChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
 });
-document.getElementById('dm_confirm').addEventListener('click', ()=>{
+function confirmDeliver(){
   const o = orders.find(x=>x.id===activeOrderId);
   if(!o) return;
   o.status='delivered';
   o.stage = STAGES.length-1;
   o.dateDelivered = document.getElementById('dm_dateDelivered').value || todayStr();
-  o.issue = getChipVal('dm_issueChips') || 'none';
+  o.issue = document.querySelector('#dm_issueChips .chip.active').dataset.val;
   o.deliveryNotes = document.getElementById('dm_notes').value.trim();
   saveOrders();
-  document.getElementById('deliverModalOverlay').classList.remove('active');
-  document.getElementById('orderModalOverlay').classList.remove('active');
+  closeModal('deliverModalOverlay');
+  closeModal('orderModalOverlay');
   renderDashboard(); renderOrdersList();
   toast('تم تأكيد التسليم ✓');
-});
+}
 
 /* ============================================================
    CLIENTS
 ============================================================ */
 function computeClientStats(name){
   const list = orders.filter(o=>o.clientName===name);
-  const totalOrders = list.length;
   const totalWeight = list.reduce((s,o)=>s+(o.weight||0),0);
   const delivered = list.filter(o=>o.status==='delivered');
-  const onTimeCount = delivered.filter(o=> o.dateRequired && o.dateDelivered && o.dateDelivered<=o.dateRequired).length;
+  const onTimeCount = delivered.filter(o=>o.dateRequired && o.dateDelivered && o.dateDelivered<=o.dateRequired).length;
   const onTimePct = delivered.length ? Math.round(onTimeCount/delivered.length*100) : 0;
-  const pending = list.filter(o=>o.status==='pending').length;
-  return { list, totalOrders, totalWeight, onTimePct, pending, delivered: delivered.length };
+  let profitSum=0, profitCount=0;
+  list.forEach(o=>{ const c=calcOrderCost(o); if(c.profit!==null){ profitSum+=c.profit; profitCount++; } });
+  return { list, totalOrders:list.length, totalWeight, onTimePct, profitSum, profitCount };
 }
-
-document.getElementById('clientSearch').addEventListener('input', renderClientsGrid);
-
-function renderClientsGrid(){
+function renderClients(){
   const names = [...new Set(orders.map(o=>o.clientName))];
-  const q = document.getElementById('clientSearch').value.trim().toLowerCase();
-  const filtered = names.filter(n=>n.toLowerCase().includes(q));
-  const grid = document.getElementById('clientGrid');
-  if(filtered.length===0){
-    grid.innerHTML = '<p class="empty-note">لسه مفيش عملاء مطابقين.</p>';
-    return;
-  }
+  const q = (document.getElementById('client-search-input').value||'').trim().toLowerCase();
+  const filtered = names.filter(n=>{
+    const meta = clientsMeta[n]||{};
+    return n.toLowerCase().includes(q) || (meta.phone||'').includes(q);
+  });
+  document.getElementById('clients-count-label').textContent = names.length;
+  const grid = document.getElementById('clients-grid-container');
+  if(filtered.length===0){ grid.innerHTML = `<p class="empty-note">لسه مفيش عملاء. سجّل أوردر جديد وهيظهر العميل هنا أوتوماتيك.</p>`; return; }
   grid.innerHTML = filtered.map(name=>{
     const s = computeClientStats(name);
-    return `<div class="client-card spec-card" onclick="openClientDetail('${esc(name).replace(/'/g,"\\'")}')">
-      <div class="cc-head">
-        <div class="cc-name"><span class="ic">👤</span>${esc(name)}</div>
-        <div class="cc-badge">${s.pending>0?'🟠 مفتوح':'✅ منتهي'}</div>
+    const meta = clientsMeta[name]||{};
+    return `<div class="client-card" onclick="openClientDetail('${name.replace(/'/g,"\\'")}')">
+      <div class="client-header">
+        <div class="client-avatar-box">${name.trim().charAt(0)}</div>
+        <div class="client-main-info"><h3>${esc(name)}</h3><span><i data-lucide="phone" style="width:12px;"></i> ${esc(meta.phone)||'—'}</span></div>
       </div>
-      <div class="client-stat-row">
-        <div><span class="n mono">${s.totalOrders}</span><span class="l">أوردر</span></div>
-        <div><span class="n mono">${s.totalWeight}</span><span class="l">كجم</span></div>
-        <div><span class="n mono">${s.onTimePct}%</span><span class="l">في الميعاد</span></div>
+      <div class="client-stats-box">
+        <div class="client-stat-subcard"><span>أوردرات</span><strong>${s.totalOrders}</strong></div>
+        <div class="client-stat-subcard"><span>الالتزام</span><strong style="color:var(--green);">${s.onTimePct}%</strong></div>
+        <div class="client-stat-subcard"><span>وزن إجمالي</span><strong style="font-size:14px;">${s.totalWeight} كجم</strong></div>
+        <div class="client-stat-subcard"><span>أرباح</span><strong style="font-size:14px;color:var(--green);">${s.profitCount?money(s.profitSum):'—'}</strong></div>
       </div>
     </div>`;
   }).join('');
+  lucide.createIcons();
 }
-
-function showClientsGrid(){
-  document.getElementById('clientsGridView').style.display='block';
-  document.getElementById('clientDetailView').classList.remove('active');
-}
-document.getElementById('clientBackBtn').addEventListener('click', ()=>{
-  showClientsGrid(); renderClientsGrid();
-});
-
+function showClientsGrid(){ document.getElementById('clientsGridView').style.display='block'; document.getElementById('clientDetailView').style.display='none'; }
 let activeClientName = null;
 function openClientDetail(name){
   activeClientName = name;
   document.getElementById('clientsGridView').style.display='none';
-  document.getElementById('clientDetailView').classList.add('active');
-
+  document.getElementById('clientDetailView').style.display='block';
   const s = computeClientStats(name);
   const meta = clientsMeta[name] || {phone:'',address:'',notes:''};
-
   document.getElementById('cd_name').textContent = name;
-  document.getElementById('cd_phone').textContent = meta.phone ? ('📞 '+meta.phone + (meta.address? '   📍 '+meta.address:'')) : 'مفيش بيانات تواصل محفوظة';
+  document.getElementById('cd_phone').textContent = meta.phone ? ('📞 '+meta.phone+(meta.address?'  📍 '+meta.address:'')) : 'مفيش بيانات تواصل محفوظة';
   document.getElementById('cd_totalOrders').textContent = s.totalOrders;
-  document.getElementById('cd_totalWeight').textContent = s.totalWeight;
+  document.getElementById('cd_totalWeight').textContent = s.totalWeight + ' كجم';
   document.getElementById('cd_onTime').textContent = s.onTimePct+'%';
-  document.getElementById('cd_pending').textContent = s.pending;
+  document.getElementById('cd_profit').textContent = s.profitCount ? money(s.profitSum) : '—';
   document.getElementById('cd_notes').value = meta.notes || '';
-
-  let clientCostTotal=0, clientProfitSum=0, clientProfitCount=0;
-  s.list.forEach(o=>{
-    const c = calcOrderCost(o);
-    clientCostTotal += c.total;
-    if(c.profit!==null){ clientProfitSum+=c.profit; clientProfitCount++; }
-  });
-  animateNumber(document.getElementById('cd_totalCost'), clientCostTotal);
-  const profitEl = document.getElementById('cd_profit');
-  if(clientProfitCount) animateNumber(profitEl, clientProfitSum); else profitEl.textContent='—';
-  profitEl.className = 'num mono ' + (clientProfitCount ? (clientProfitSum>=0?'profit-pos':'profit-neg') : '');
-
-  const tbody = document.querySelector('#cd_table tbody');
-  tbody.innerHTML = s.list.map(o=>{
-    const label = productLabel(o);
-    const st = orderStatusInfo(o);
-    return `<tr onclick="closeAndOpenOrder('${o.id}')">
-      <td>${label}${o.orderDesc?' — '+esc(o.orderDesc):''}<br><span class="mono" style="color:var(--ink-faint);font-size:10px;">#${o.id}</span></td>
-      <td class="mono">${o.weight||0} كجم</td>
-      <td style="font-size:11.5px;">${esc(o.executingEngineer)||'—'}</td>
-      <td style="color:var(--accent);font-size:11.5px;">${stageLabelText(o)}</td>
-      <td class="mono">${fmtDate(o.dateRequired)}</td>
-      <td><span class="stamp ${st.cls}" style="font-size:9.5px;padding:2px 7px;">${st.text}</span></td>
+  document.getElementById('cd_table_body').innerHTML = s.list.map(o=>{
+    const st = statusPillInfo(o);
+    return `<tr class="clickable" onclick="openOrderModal('${o.id}')">
+      <td><strong>${esc(o.orderDesc)}</strong></td>
+      <td>${o.weight||0} كجم</td>
+      <td>${esc(o.executingEngineer)||'—'}</td>
+      <td style="color:var(--accent-yellow);">${stageLabelText(o)}</td>
+      <td>${fmtDate(o.dateRequired)}</td>
+      <td><span class="status-pill ${st.cls}">${st.text}</span></td>
     </tr>`;
-  }).join('');
+  }).join('') || `<tr><td colspan="6" class="empty-note">مفيش أوردرات.</td></tr>`;
 }
-function closeAndOpenOrder(id){ openOrderModal(id); }
-
-document.getElementById('cd_saveNotes').addEventListener('click', ()=>{
-  if(!activeClientName) return;
+function saveClientNotes(){
   if(!clientsMeta[activeClientName]) clientsMeta[activeClientName] = {phone:'',address:'',notes:''};
   clientsMeta[activeClientName].notes = document.getElementById('cd_notes').value.trim();
   saveClientsMeta();
   toast('اتحفظت الملاحظات ✓');
-});
-
-document.getElementById('cd_editContact').addEventListener('click', ()=>{
-  const meta = clientsMeta[activeClientName] || {phone:'',address:'',notes:''};
+}
+function editClientContact(){
+  const meta = clientsMeta[activeClientName] || {phone:'',address:''};
   document.getElementById('cm_phone').value = meta.phone||'';
   document.getElementById('cm_address').value = meta.address||'';
-  document.getElementById('contactModalOverlay').classList.add('active');
-});
-document.getElementById('cm_close').addEventListener('click', ()=>document.getElementById('contactModalOverlay').classList.remove('active'));
-document.getElementById('cm_save').addEventListener('click', ()=>{
+  openModal('contactModalOverlay');
+}
+function saveClientContact(){
   if(!clientsMeta[activeClientName]) clientsMeta[activeClientName] = {phone:'',address:'',notes:''};
   clientsMeta[activeClientName].phone = document.getElementById('cm_phone').value.trim();
   clientsMeta[activeClientName].address = document.getElementById('cm_address').value.trim();
   saveClientsMeta();
-  document.getElementById('contactModalOverlay').classList.remove('active');
+  closeModal('contactModalOverlay');
   openClientDetail(activeClientName);
   toast('اتحفظت بيانات التواصل ✓');
-});
-
-/* ============================================================
-   EXPORT
-============================================================ */
-function downloadCSV(filename, rows){
-  const csv = rows.map(r=>r.map(v=>{
-    v = (v===undefined||v===null) ? '' : String(v);
-    if(v.includes(',')||v.includes('"')||v.includes('\n')) v = '"'+v.replace(/"/g,'""')+'"';
-    return v;
-  }).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
-document.getElementById('exportOrdersBtn').addEventListener('click', ()=>{
-  const header = ['ID','العميل','رقم الموبايل','مهندس الشغلانة (العميل)','المهندس المنفذ','اسم الشغلانة','تفاصيل القطع','إجمالي الوزن كجم','إجمالي عدد القطع','عدد العمال','تاريخ الاستلام','تاريخ التسليم المطلوب','المرحلة الحالية','الحالة','تاريخ التسليم الفعلي','مشكلة','ملاحظات التسليم'];
-  const rows = [header, ...orders.map(o=>{
-    const itemsSummary = (Array.isArray(o.items) && o.items.length)
-      ? o.items.map(it=>{
-          const matLabel = it.materialName || (LABELS.ironType[it.ironType]||it.ironType) || '';
-          const finishLabel = it.finish==='yes' ? (' - '+(LABELS.finishType[it.finishType]||it.finishType)) : '';
-          return `${matLabel} ${it.length}x${it.width}x${it.thickness}mm ${it.weight.toFixed(2)}kg x${it.pieceCount}${finishLabel}`;
-        }).join(' | ')
-      : '';
-    return [
-      o.id, o.clientName, o.clientPhone, o.clientEngineer||'', o.executingEngineer||'',
-      o.orderDesc, itemsSummary, o.weight, o.pieceCount, o.workers,
-      o.dateReceived, o.dateRequired, stageLabelText(o), o.status, o.dateDelivered, LABELS.issue[o.issue]||'', o.deliveryNotes
-    ];
-  })];
-  downloadCSV('prismops_orders.csv', rows);
-  toast('تم تحميل ملف الأوردرات');
-});
+/* ============================================================
+   COSTS TAB
+============================================================ */
+function renderMaterialPrices(){
+  const tbody = document.getElementById('material-prices-tbody');
+  const keys = Object.keys(pricing.materials);
+  tbody.innerHTML = keys.map(key=>{
+    const m = pricing.materials[key];
+    return `<tr>
+      <td><strong>${materialLabel(key)}</strong></td>
+      <td><input type="number" step="0.01" class="editable-price-input" style="color:var(--text-white);" value="${m.density}" onchange="updateMaterialField('${key}','density',this.value)"></td>
+      <td><input type="number" class="editable-price-input" value="${m.price}" onchange="updateMaterialField('${key}','price',this.value)"></td>
+      <td style="font-size:11px;color:var(--text-muted);">${m.lastUpdate || '—'}</td>
+      <td><button class="btn-danger-ghost" onclick="removeMaterial('${key}')"><i data-lucide="trash-2" style="width:14px;"></i></button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pr_wage').value = pricing.dailyWage;
+  document.getElementById('pr_overhead').value = pricing.overheadPercent;
+  document.getElementById('finishRatesGrid').innerHTML = Object.entries(FINISH_LABELS).map(([key,label])=>
+    `<div class="form-group"><label>${label}</label><input type="number" class="form-control" value="${pricing.finishRates[key]}" onchange="updateFinishRate('${key}',this.value)"></div>`).join('');
+  lucide.createIcons();
+}
+function updateMaterialField(key, field, value){
+  pricing.materials[key][field] = parseFloat(value)||0;
+  pricing.materials[key].lastUpdate = new Date().toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'});
+  savePricing();
+  renderOrdersCostTable();
+  toast('اتحفظ السعر ✓');
+}
+function removeMaterial(key){
+  if(!confirm('متأكد إنك عايز تمسح الخامة دي من القايمة؟')) return;
+  delete pricing.materials[key];
+  savePricing();
+  renderMaterialPrices();
+  renderIronTypeChips();
+  toast('اتمسحت الخامة');
+}
+function addCustomMaterial(){
+  const name = document.getElementById('newMaterialName').value.trim();
+  const price = parseFloat(document.getElementById('newMaterialPrice').value)||0;
+  const density = parseFloat(document.getElementById('newMaterialDensity').value)||7.85;
+  if(!name){ toast('اكتب اسم الخامة الأول'); return; }
+  const key = 'custom:' + name.replace(/\s+/g,'_');
+  if(pricing.materials[key]){ toast('الخامة دي موجودة أصلاً'); return; }
+  pricing.materials[key] = { price, density, lastUpdate: new Date().toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'}) };
+  savePricing();
+  document.getElementById('newMaterialName').value='';
+  document.getElementById('newMaterialPrice').value='';
+  document.getElementById('newMaterialDensity').value='7.85';
+  renderMaterialPrices();
+  renderIronTypeChips();
+  toast('اتضافت الخامة الجديدة ✓ — هتلاقيها في نوع الخام لما تعمل أوردر جديد');
+}
+function savePricingGeneral(){
+  pricing.dailyWage = parseFloat(document.getElementById('pr_wage').value)||0;
+  pricing.overheadPercent = parseFloat(document.getElementById('pr_overhead').value)||0;
+  savePricing();
+  renderOrdersCostTable();
+  toast('اتحفظت الإعدادات ✓');
+}
+function updateFinishRate(key, value){
+  pricing.finishRates[key] = parseFloat(value)||0;
+  savePricing();
+  renderOrdersCostTable();
+  toast('اتحفظ سعر التشطيب ✓');
+}
+function renderOrdersCostTable(){
+  const tbody = document.getElementById('orders-cost-tbody');
+  if(orders.length===0){
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-note">لسه مفيش أوردرات.</td></tr>`;
+    ['sumMaterial','sumLabor','sumFinish','sumOverhead','sumProfit'].forEach(id=>document.getElementById(id).textContent='0 ج.م');
+    return;
+  }
+  let sMat=0,sLab=0,sFin=0,sOver=0,sProfit=0,profitCount=0;
+  tbody.innerHTML = orders.map(o=>{
+    const c = calcOrderCost(o);
+    sMat+=c.material; sLab+=c.labor; sFin+=c.finish; sOver+=c.overhead;
+    if(c.profit!==null){ sProfit+=c.profit; profitCount++; }
+    return `<tr class="clickable" onclick="openOrderModal('${o.id}')">
+      <td class="code-cell">${o.id}</td>
+      <td><strong>${esc(o.orderDesc)}</strong></td>
+      <td>${money(c.material)}</td>
+      <td>${money(c.labor)}</td>
+      <td>${money(c.finish)}</td>
+      <td>${money(c.overhead)}</td>
+      <td><strong>${money(c.total)}</strong></td>
+      <td>${money(o.sellingPrice)}</td>
+      <td style="color:var(--green);font-weight:bold;">${c.profit!==null?money(c.profit):'—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sumMaterial').textContent = money(sMat);
+  document.getElementById('sumLabor').textContent = money(sLab);
+  document.getElementById('sumFinish').textContent = money(sFin);
+  document.getElementById('sumOverhead').textContent = money(sOver);
+  document.getElementById('sumProfit').textContent = profitCount?money(sProfit):'—';
+}
 
-document.getElementById('exportClientsBtn').addEventListener('click', ()=>{
+/* ============================================================
+   EXPORT (Excel via SheetJS) — real data
+============================================================ */
+function exportData(){
+  if(typeof XLSX==='undefined'){ toast('مكتبة التصدير لسه بتحمل، جرب تاني بعد لحظة'); return; }
+  if(orders.length===0){ toast('مفيش بيانات لتصديرها لسه'); return; }
+  const wb = XLSX.utils.book_new();
+
+  const ordersExport = orders.map(o=>{
+    const c = calcOrderCost(o);
+    return {
+      'كود الأوردر': o.id, 'اسم الشغلانة': o.orderDesc, 'العميل': o.clientName,
+      'الموبايل': o.clientPhone||'', 'مهندس العميل': o.clientEngineer||'', 'المهندس المنفذ': o.executingEngineer||'',
+      'نوع المنتج': o.productType||'', 'إجمالي الوزن كجم': o.weight, 'إجمالي القطع': o.pieceCount,
+      'دهان/تشطيب': FINISH_LABELS[o.finishType]||'', 'الحالة': o.status==='delivered'?'تم التسليم':'جاري التنفيذ',
+      'المرحلة': stageLabelText(o), 'تاريخ الاستلام': o.dateReceived, 'تاريخ التسليم المطلوب': o.dateRequired,
+      'تاريخ التسليم الفعلي': o.dateDelivered||'', 'تكلفة الخامات': Math.round(c.material), 'تكلفة العمالة': Math.round(c.labor),
+      'تكلفة التشطيب': Math.round(c.finish), 'المصاريف': Math.round(c.overhead), 'إجمالي التكلفة': Math.round(c.total),
+      'سعر البيع': o.sellingPrice, 'الربح': c.profit!==null?Math.round(c.profit):''
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ordersExport), 'الأوردرات والتكاليف');
+
   const names = [...new Set(orders.map(o=>o.clientName))];
-  const header = ['العميل','رقم الموبايل','العنوان','إجمالي الأوردرات','أوردرات مفتوحة','إجمالي الوزن كجم','نسبة الالتزام بالميعاد','ملاحظات'];
-  const rows = [header, ...names.map(name=>{
+  const clientsExport = names.map(name=>{
     const s = computeClientStats(name);
-    const meta = clientsMeta[name]||{phone:'',address:'',notes:''};
-    return [name, meta.phone, meta.address, s.totalOrders, s.pending, s.totalWeight, s.onTimePct+'%', meta.notes];
-  })];
-  downloadCSV('prismops_clients.csv', rows);
-  toast('تم تحميل ملف العملاء');
-});
+    const meta = clientsMeta[name]||{};
+    return { 'اسم العميل': name, 'الموبايل': meta.phone||'', 'العنوان': meta.address||'', 'عدد الأوردرات': s.totalOrders,
+      'إجمالي الوزن': s.totalWeight, 'نسبة الالتزام': s.onTimePct+'%', 'إجمالي الأرباح': s.profitCount?Math.round(s.profitSum):'', 'ملاحظات': meta.notes||'' };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientsExport), 'سجل العملاء');
 
-document.getElementById('clearAllBtn').addEventListener('click', ()=>{
-  if(!confirm('متأكد؟ هيتمسح كل الأوردرات وبيانات العملاء نهائيًا.')) return;
-  if(!confirm('تأكيد أخير — مفيش رجوع بعد كده.')) return;
-  orders = []; clientsMeta = {};
-  saveOrders(); saveClientsMeta();
-  renderDashboard(); renderOrdersList(); renderClientsGrid();
-  toast('اتمسحت كل البيانات');
-});
+  const materialsExport = Object.entries(pricing.materials).map(([key,m])=>({
+    'اسم الخامة': materialLabel(key), 'الكثافة جم/سم3': m.density, 'السعر ج.م/كجم': m.price, 'آخر تحديث': m.lastUpdate||''
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(materialsExport), 'أسعار الخامات');
+
+  XLSX.writeFile(wb, `PRISMOPS_Report_${todayStr()}.xlsx`);
+  toast('تم تحميل ملف Excel ✓');
+}
 
 /* ============================================================
    INIT
 ============================================================ */
-renderDashboard();
-renderOrdersList();
-renderClientsGrid();
-renderCosts();
+window.onload = function(){
+  lucide.createIcons();
+  applyProfile();
+  renderIronTypeChips();
+  renderFinishChips();
+  setDefaultDates();
+  updateDatalists();
+  renderDashboard();
+  renderMaterialsList();
+  recalculateAll();
+};
+function updateDatalists(){
+  const clientNames = [...new Set(orders.map(o=>o.clientName))];
+  document.getElementById('clientNamesList').innerHTML = clientNames.map(n=>`<option value="${esc(n)}">`).join('');
+  const engNames = [...new Set(orders.map(o=>o.executingEngineer).filter(Boolean))];
+  document.getElementById('engineerNamesList').innerHTML = engNames.map(n=>`<option value="${esc(n)}">`).join('');
+}
 </script>
 </body>
 </html>
